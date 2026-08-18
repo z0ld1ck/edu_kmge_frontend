@@ -31,7 +31,9 @@ class _LoginPageState extends State<LoginPage> {
       _error = null;
     });
     try {
-      await context.read<AuthController>().login(_email.text.trim(), _password.text);
+      await context
+          .read<AuthController>()
+          .login(_email.text.trim(), _password.text);
       if (mounted) context.go('/catalog');
     } catch (e) {
       setState(() => _error = e.toString());
@@ -42,6 +44,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.tokens;
     return Scaffold(
       body: Center(
         child: SingleChildScrollView(
@@ -50,13 +53,14 @@ class _LoginPageState extends State<LoginPage> {
             margin: const EdgeInsets.all(24),
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: t.surface,
               borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: t.border),
               boxShadow: [
                 BoxShadow(
-                    color: Colors.black.withOpacity(0.06),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8))
+                    color: Colors.black.withOpacity(0.10),
+                    blurRadius: 30,
+                    offset: const Offset(0, 12))
               ],
             ),
             child: Column(
@@ -65,25 +69,26 @@ class _LoginPageState extends State<LoginPage> {
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.eco, color: AppColors.brand, size: 32),
-                    SizedBox(width: 8),
+                  children: [
+                    Icon(Icons.eco, color: t.accent, size: 32),
+                    const SizedBox(width: 8),
                     Text('KMGE Edu',
                         style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.brand)),
+                            color: t.accent)),
                   ],
                 ),
                 const SizedBox(height: 6),
-                const Text('Система дистанционного обучения',
+                Text('Система дистанционного обучения',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey)),
+                    style: TextStyle(color: t.muted)),
                 const SizedBox(height: 28),
                 TextField(
                   controller: _email,
                   decoration: const InputDecoration(
-                      labelText: 'Email', prefixIcon: Icon(Icons.email_outlined)),
+                      labelText: 'Email',
+                      prefixIcon: Icon(Icons.email_outlined)),
                   keyboardType: TextInputType.emailAddress,
                 ),
                 const SizedBox(height: 14),
@@ -92,11 +97,12 @@ class _LoginPageState extends State<LoginPage> {
                   obscureText: true,
                   onSubmitted: (_) => _submit(),
                   decoration: const InputDecoration(
-                      labelText: 'Пароль', prefixIcon: Icon(Icons.lock_outline)),
+                      labelText: 'Пароль',
+                      prefixIcon: Icon(Icons.lock_outline)),
                 ),
                 if (_error != null) ...[
                   const SizedBox(height: 14),
-                  Text(_error!, style: const TextStyle(color: Colors.red)),
+                  Text(_error!, style: TextStyle(color: t.danger)),
                 ],
                 const SizedBox(height: 24),
                 FilledButton(
@@ -114,11 +120,11 @@ class _LoginPageState extends State<LoginPage> {
                   onPressed: () => context.go('/register'),
                   child: const Text('Нет аккаунта? Зарегистрироваться'),
                 ),
-                const Divider(height: 28),
-                const Text(
+                Divider(height: 28, color: t.border),
+                Text(
                   'Демо-доступ:\nadmin@kmge.kz / admin12345\nstudent@kmge.kz / student123',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                  style: TextStyle(color: t.faint, fontSize: 12),
                 ),
               ],
             ),

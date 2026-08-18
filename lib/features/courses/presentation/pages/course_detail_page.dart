@@ -82,6 +82,7 @@ class _CourseDetailView extends StatelessWidget {
   }
 
   Widget _content(BuildContext context, CourseDetailController ctrl) {
+    final t = context.tokens;
     final course = ctrl.course!;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -94,20 +95,22 @@ class _CourseDetailView extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.brand.withOpacity(0.1),
+                  color: t.accentSoft,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(course.category,
-                    style: const TextStyle(
-                        color: AppColors.brand, fontWeight: FontWeight.w600)),
+                    style: TextStyle(
+                        color: t.accentInk, fontWeight: FontWeight.w600)),
               ),
               const SizedBox(height: 12),
               Text(course.title,
-                  style: const TextStyle(
-                      fontSize: 28, fontWeight: FontWeight.bold)),
+                  style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: t.text)),
               const SizedBox(height: 10),
               Text(course.description,
-                  style: TextStyle(color: Colors.grey.shade700, fontSize: 15)),
+                  style: TextStyle(color: t.muted, fontSize: 15)),
               const SizedBox(height: 20),
               if (!ctrl.enrolled)
                 FilledButton.icon(
@@ -116,12 +119,15 @@ class _CourseDetailView extends StatelessWidget {
                   label: const Text('Записаться на курс'),
                 )
               else ...[
-                _progressBar(ctrl.doneLessons, ctrl.totalLessons),
+                _progressBar(context, ctrl.doneLessons, ctrl.totalLessons),
                 const SizedBox(height: 20),
               ],
               const SizedBox(height: 8),
-              const Text('Программа курса',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              Text('Программа курса',
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: t.text)),
               const SizedBox(height: 12),
               for (var i = 0; i < course.lessons.length; i++)
                 _lessonTile(context, ctrl, i + 1, course.lessons[i]),
@@ -137,7 +143,8 @@ class _CourseDetailView extends StatelessWidget {
     );
   }
 
-  Widget _progressBar(int done, int total) {
+  Widget _progressBar(BuildContext context, int done, int total) {
+    final t = context.tokens;
     final pct = total == 0 ? 0.0 : done / total;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -145,11 +152,10 @@ class _CourseDetailView extends StatelessWidget {
         Row(
           children: [
             Text('Прогресс: $done из $total уроков',
-                style: const TextStyle(fontWeight: FontWeight.w600)),
+                style: TextStyle(fontWeight: FontWeight.w600, color: t.text)),
             const Spacer(),
             Text('${(pct * 100).toStringAsFixed(0)}%',
-                style: const TextStyle(
-                    color: AppColors.brand, fontWeight: FontWeight.bold)),
+                style: TextStyle(color: t.accent, fontWeight: FontWeight.bold)),
           ],
         ),
         const SizedBox(height: 8),
@@ -158,8 +164,8 @@ class _CourseDetailView extends StatelessWidget {
           child: LinearProgressIndicator(
             value: pct,
             minHeight: 10,
-            backgroundColor: Colors.grey.shade200,
-            valueColor: const AlwaysStoppedAnimation(AppColors.brand),
+            backgroundColor: t.ringTrack,
+            valueColor: AlwaysStoppedAnimation(t.accent),
           ),
         ),
       ],
@@ -168,28 +174,30 @@ class _CourseDetailView extends StatelessWidget {
 
   Widget _lessonTile(
       BuildContext context, CourseDetailController ctrl, int num, Lesson lesson) {
+    final t = context.tokens;
     final completed = ctrl.completedLessonIds.contains(lesson.id);
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
       child: ExpansionTile(
         shape: const Border(),
+        collapsedShape: const Border(),
         leading: CircleAvatar(
-          backgroundColor: completed ? AppColors.brand : Colors.grey.shade200,
+          backgroundColor: completed ? t.accent : t.surface2,
           child: completed
               ? const Icon(Icons.check, color: Colors.white, size: 20)
-              : Text('$num', style: TextStyle(color: Colors.grey.shade700)),
+              : Text('$num', style: TextStyle(color: t.muted)),
         ),
         title: Text(lesson.title,
-            style: const TextStyle(fontWeight: FontWeight.w600)),
+            style: TextStyle(fontWeight: FontWeight.w600, color: t.text)),
         childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
         expandedCrossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(lesson.content,
-              style: const TextStyle(fontSize: 15, height: 1.5)),
+              style: TextStyle(fontSize: 15, height: 1.5, color: t.text)),
           if (lesson.videoUrl != null && lesson.videoUrl!.isNotEmpty) ...[
             const SizedBox(height: 8),
             Row(children: [
-              const Icon(Icons.ondemand_video, size: 18, color: AppColors.brand),
+              Icon(Icons.ondemand_video, size: 18, color: t.accent),
               const SizedBox(width: 6),
               Expanded(child: SelectableText(lesson.videoUrl!)),
             ]),
@@ -199,10 +207,9 @@ class _CourseDetailView extends StatelessWidget {
             Align(
               alignment: Alignment.centerRight,
               child: completed
-                  ? const Chip(
-                avatar:
-                Icon(Icons.check_circle, color: AppColors.brand, size: 18),
-                label: Text('Пройдено'),
+                  ? Chip(
+                avatar: Icon(Icons.check_circle, color: t.accent, size: 18),
+                label: const Text('Пройдено'),
               )
                   : FilledButton.tonal(
                 onPressed: () => ctrl.completeLesson(lesson.id),
@@ -216,29 +223,36 @@ class _CourseDetailView extends StatelessWidget {
 
   Widget _quizCard(
       BuildContext context, CourseDetailController ctrl, String title) {
+    final t = context.tokens;
     final canTake = ctrl.enrolled && ctrl.allLessonsDone;
     return Card(
-      color: AppColors.brand.withOpacity(0.04),
+      color: t.accentSoft,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: t.accent.withOpacity(0.25)),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Row(
           children: [
-            const Icon(Icons.quiz_outlined, color: AppColors.brand, size: 32),
+            Icon(Icons.quiz_outlined, color: t.accent, size: 32),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Итоговый тест',
-                      style:
-                      TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+                  Text('Итоговый тест',
+                      style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                          color: t.text)),
                   Text(
                     ctrl.enrolled
                         ? (ctrl.allLessonsDone
                         ? 'Все уроки пройдены — можно сдавать тест'
                         : 'Сначала пройдите все уроки')
                         : 'Запишитесь на курс, чтобы пройти тест',
-                    style: TextStyle(color: Colors.grey.shade600),
+                    style: TextStyle(color: t.muted),
                   ),
                 ],
               ),

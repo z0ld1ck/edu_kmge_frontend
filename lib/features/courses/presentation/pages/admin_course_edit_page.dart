@@ -35,7 +35,8 @@ class _EditView extends StatefulWidget {
   State<_EditView> createState() => _EditViewState();
 }
 
-class _EditViewState extends State<_EditView> with SingleTickerProviderStateMixin {
+class _EditViewState extends State<_EditView>
+    with SingleTickerProviderStateMixin {
   late final TabController _tabs = TabController(length: 3, vsync: this);
 
   @override
@@ -46,6 +47,7 @@ class _EditViewState extends State<_EditView> with SingleTickerProviderStateMixi
 
   @override
   Widget build(BuildContext context) {
+    final t = context.tokens;
     final ctrl = context.watch<CourseEditController>();
     return AppShell(
       title: ctrl.courseId == null ? 'Новый курс' : 'Редактирование курса',
@@ -64,11 +66,12 @@ class _EditViewState extends State<_EditView> with SingleTickerProviderStateMixi
           : Column(
         children: [
           Material(
-            color: Colors.white,
+            color: t.surface,
             child: TabBar(
               controller: _tabs,
-              labelColor: AppColors.brand,
-              indicatorColor: AppColors.brand,
+              labelColor: t.accentInk,
+              unselectedLabelColor: t.muted,
+              indicatorColor: t.accent,
               tabs: const [
                 Tab(text: 'Основное'),
                 Tab(text: 'Уроки'),
@@ -76,16 +79,17 @@ class _EditViewState extends State<_EditView> with SingleTickerProviderStateMixi
               ],
             ),
           ),
+          Divider(height: 1, color: t.border),
           Expanded(
             child: TabBarView(
               controller: _tabs,
               children: [
                 _MetaTab(onSaved: () => _tabs.animateTo(1)),
                 ctrl.courseId == null
-                    ? _lockNotice()
+                    ? _lockNotice(context)
                     : const _LessonsTab(),
                 ctrl.courseId == null
-                    ? _lockNotice()
+                    ? _lockNotice(context)
                     : const _QuizTab(),
               ],
             ),
@@ -95,12 +99,13 @@ class _EditViewState extends State<_EditView> with SingleTickerProviderStateMixi
     );
   }
 
-  Widget _lockNotice() => const Center(
+  Widget _lockNotice(BuildContext context) => Center(
     child: Padding(
-      padding: EdgeInsets.all(24),
+      padding: const EdgeInsets.all(24),
       child: Text(
           'Сначала сохраните основные данные курса на вкладке «Основное».',
-          textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
+          textAlign: TextAlign.center,
+          style: TextStyle(color: context.tokens.muted)),
     ),
   );
 }
@@ -147,9 +152,8 @@ class _MetaTabState extends State<_MetaTab> {
       await context.read<CourseEditController>().saveMeta(
         title: _title.text.trim(),
         description: _desc.text.trim(),
-        category: _category.text.trim().isEmpty
-            ? 'Общее'
-            : _category.text.trim(),
+        category:
+        _category.text.trim().isEmpty ? 'Общее' : _category.text.trim(),
         passScore: int.tryParse(_passScore.text) ?? 80,
         certificateEnabled: _certificate,
         isPublished: _published,
@@ -168,6 +172,7 @@ class _MetaTabState extends State<_MetaTab> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.tokens;
     final course = context.watch<CourseEditController>().course;
     if (!_initialized && course != null) {
       _syncFrom(course);
@@ -198,7 +203,8 @@ class _MetaTabState extends State<_MetaTab> {
                     child: TextField(
                         controller: _category,
                         decoration: const InputDecoration(
-                            labelText: 'Направление (напр. Промбезопасность)')),
+                            labelText:
+                            'Направление (напр. Промбезопасность)')),
                   ),
                   const SizedBox(width: 14),
                   SizedBox(
@@ -206,8 +212,8 @@ class _MetaTabState extends State<_MetaTab> {
                     child: TextField(
                       controller: _passScore,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                          labelText: 'Проходной балл, %'),
+                      decoration:
+                      const InputDecoration(labelText: 'Проходной балл, %'),
                     ),
                   ),
                 ],
@@ -215,21 +221,19 @@ class _MetaTabState extends State<_MetaTab> {
               const SizedBox(height: 8),
               SwitchListTile(
                 value: _published,
-                activeThumbColor: AppColors.brand,
                 title: const Text('Опубликован'),
                 subtitle: const Text('Виден студентам в каталоге'),
                 onChanged: (v) => setState(() => _published = v),
               ),
               SwitchListTile(
                 value: _certificate,
-                activeThumbColor: AppColors.brand,
                 title: const Text('Выдавать сертификат'),
                 subtitle: const Text('PDF-сертификат при сдаче теста'),
                 onChanged: (v) => setState(() => _certificate = v),
               ),
               if (_error != null) ...[
                 const SizedBox(height: 12),
-                Text(_error!, style: const TextStyle(color: Colors.red)),
+                Text(_error!, style: TextStyle(color: t.danger)),
               ],
               const SizedBox(height: 20),
               FilledButton.icon(
@@ -262,6 +266,7 @@ class _LessonsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.tokens;
     final ctrl = context.watch<CourseEditController>();
     final lessons = ctrl.course?.lessons ?? const <Lesson>[];
     return Column(
@@ -271,7 +276,8 @@ class _LessonsTab extends StatelessWidget {
           child: Row(
             children: [
               Text('Уроков: ${lessons.length}',
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: t.text)),
               const Spacer(),
               FilledButton.icon(
                 onPressed: () => _edit(context),
@@ -292,9 +298,9 @@ class _LessonsTab extends StatelessWidget {
                   margin: const EdgeInsets.only(bottom: 10),
                   child: ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: AppColors.brand.withOpacity(0.1),
+                      backgroundColor: t.accentSoft,
                       child: Text('${i + 1}',
-                          style: const TextStyle(color: AppColors.brand)),
+                          style: TextStyle(color: t.accent)),
                     ),
                     title: Text(lessons[i].title),
                     subtitle: Text(lessons[i].content,
@@ -308,8 +314,8 @@ class _LessonsTab extends StatelessWidget {
                               _edit(context, lesson: lessons[i]),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.delete_outline,
-                              size: 20, color: Colors.redAccent),
+                          icon: Icon(Icons.delete_outline,
+                              size: 20, color: t.danger),
                           onPressed: () =>
                               ctrl.deleteLesson(lessons[i].id),
                         ),
@@ -418,7 +424,7 @@ class _QuizTab extends StatefulWidget {
 
 class _QuizTabState extends State<_QuizTab> {
   final List<QuestionDraft> _questions = [];
-  final List<int> _correct = []; // индекс правильного ответа по каждому вопросу
+  final List<int> _correct = [];
   bool _loading = true;
   bool _busy = false;
   String? _info;
@@ -451,8 +457,12 @@ class _QuizTabState extends State<_QuizTab> {
 
   void _addQuestion() {
     setState(() {
-      _questions.add(QuestionDraft(
-          answers: [AnswerDraft(), AnswerDraft(), AnswerDraft(), AnswerDraft()]));
+      _questions.add(QuestionDraft(answers: [
+        AnswerDraft(),
+        AnswerDraft(),
+        AnswerDraft(),
+        AnswerDraft()
+      ]));
       _correct.add(0);
     });
   }
@@ -493,7 +503,8 @@ class _QuizTabState extends State<_QuizTab> {
           _questions.add(q);
           _correct.add(correctIdx < 0 ? 0 : correctIdx);
         }
-        _info = 'Сгенерировано ${generated.length} вопросов. Проверьте и сохраните.';
+        _info =
+        'Сгенерировано ${generated.length} вопросов. Проверьте и сохраните.';
       });
     } catch (e) {
       setState(() => _info = 'Ошибка AI: ${e.toString()}');
@@ -507,7 +518,6 @@ class _QuizTabState extends State<_QuizTab> {
       _busy = true;
       _info = null;
     });
-    // Применяем выбранные правильные ответы к черновикам.
     for (var i = 0; i < _questions.length; i++) {
       for (var a = 0; a < _questions[i].answers.length; a++) {
         _questions[i].answers[a].isCorrect = a == _correct[i];
@@ -525,6 +535,7 @@ class _QuizTabState extends State<_QuizTab> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.tokens;
     if (_loading) return const Center(child: CircularProgressIndicator());
     return Column(
       children: [
@@ -534,7 +545,7 @@ class _QuizTabState extends State<_QuizTab> {
             children: [
               OutlinedButton.icon(
                 onPressed: _busy ? null : _aiGenerate,
-                icon: const Icon(Icons.auto_awesome, color: AppColors.brand),
+                icon: Icon(Icons.auto_awesome, color: t.accent),
                 label: const Text('Сгенерировать AI'),
               ),
               const SizedBox(width: 10),
@@ -556,14 +567,14 @@ class _QuizTabState extends State<_QuizTab> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(_info!,
-                style: const TextStyle(color: AppColors.brand, fontSize: 13)),
+                style: TextStyle(color: t.accent, fontSize: 13)),
           ),
         if (_busy) const LinearProgressIndicator(minHeight: 2),
         Expanded(
           child: _questions.isEmpty
               ? const Center(
-              child: Text(
-                  'Добавьте вопросы вручную или сгенерируйте через AI'))
+              child:
+              Text('Добавьте вопросы вручную или сгенерируйте через AI'))
               : ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: _questions.length,
@@ -575,6 +586,7 @@ class _QuizTabState extends State<_QuizTab> {
   }
 
   Widget _questionEditor(int index) {
+    final t = context.tokens;
     final q = _questions[index];
     return Card(
       margin: const EdgeInsets.only(bottom: 14),
@@ -587,24 +599,23 @@ class _QuizTabState extends State<_QuizTab> {
               children: [
                 CircleAvatar(
                   radius: 14,
-                  backgroundColor: AppColors.brand.withOpacity(0.1),
+                  backgroundColor: t.accentSoft,
                   child: Text('${index + 1}',
-                      style: const TextStyle(
-                          color: AppColors.brand, fontSize: 13)),
+                      style: TextStyle(color: t.accent, fontSize: 13)),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: TextField(
                     controller: TextEditingController(text: q.text)
-                      ..selection = TextSelection.collapsed(offset: q.text.length),
+                      ..selection =
+                      TextSelection.collapsed(offset: q.text.length),
                     onChanged: (v) => q.text = v,
                     decoration: const InputDecoration(
                         hintText: 'Текст вопроса', isDense: true),
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.delete_outline,
-                      color: Colors.redAccent, size: 20),
+                  icon: Icon(Icons.delete_outline, color: t.danger, size: 20),
                   onPressed: () => setState(() {
                     _questions.removeAt(index);
                     _correct.removeAt(index);
@@ -613,15 +624,15 @@ class _QuizTabState extends State<_QuizTab> {
               ],
             ),
             const SizedBox(height: 8),
-            const Text('Отметьте правильный вариант:',
-                style: TextStyle(fontSize: 12, color: Colors.grey)),
+            Text('Отметьте правильный вариант:',
+                style: TextStyle(fontSize: 12, color: t.muted)),
             for (var a = 0; a < q.answers.length; a++)
               Row(
                 children: [
                   Radio<int>(
                     value: a,
                     groupValue: _correct[index],
-                    activeColor: AppColors.brand,
+                    activeColor: t.accent,
                     onChanged: (v) => setState(() => _correct[index] = v!),
                   ),
                   Expanded(

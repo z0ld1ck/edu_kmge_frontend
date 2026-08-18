@@ -65,7 +65,8 @@ class _Questions extends StatelessWidget {
                   : () {
                 if (!ctrl.allAnswered) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Ответьте на все вопросы')),
+                    const SnackBar(
+                        content: Text('Ответьте на все вопросы')),
                   );
                   return;
                 }
@@ -89,6 +90,7 @@ class _Questions extends StatelessWidget {
 
   Widget _questionCard(
       BuildContext context, int num, Question q, QuizController ctrl) {
+    final t = context.tokens;
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
@@ -97,8 +99,10 @@ class _Questions extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('$num. ${q.text}',
-                style:
-                const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: t.text)),
             const SizedBox(height: 8),
             for (final a in q.answers)
               RadioListTile<int>(
@@ -106,7 +110,7 @@ class _Questions extends StatelessWidget {
                 groupValue: ctrl.selected[q.id],
                 onChanged: (v) => ctrl.select(q.id, v!),
                 title: Text(a.text),
-                activeColor: AppColors.brand,
+                activeColor: t.accent,
                 contentPadding: EdgeInsets.zero,
                 dense: true,
               ),
@@ -123,8 +127,10 @@ class _Result extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.tokens;
     final ctrl = context.watch<QuizController>();
     final r = ctrl.result!;
+    final passColor = r.passed ? t.accent : t.danger;
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 480),
@@ -136,26 +142,25 @@ class _Result extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(r.passed ? Icons.verified : Icons.cancel,
-                    size: 72,
-                    color: r.passed ? AppColors.brand : Colors.redAccent),
+                    size: 72, color: passColor),
                 const SizedBox(height: 16),
                 Text(r.passed ? 'Тест сдан!' : 'Тест не сдан',
                     style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: r.passed ? AppColors.brand : Colors.redAccent)),
+                        color: passColor)),
                 const SizedBox(height: 8),
                 Text('Результат: ${r.score.toStringAsFixed(0)}%  '
                     '(${r.correct} из ${r.total})'),
                 const SizedBox(height: 8),
                 if (r.passed && r.certificateId != null)
-                  const Text('🎓 Сертификат выдан — см. раздел «Сертификаты»',
+                  Text('🎓 Сертификат выдан — см. раздел «Сертификаты»',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey)),
+                      style: TextStyle(color: t.muted)),
                 if (!r.passed)
-                  const Text('Повторите материал и попробуйте ещё раз.',
+                  Text('Повторите материал и попробуйте ещё раз.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey)),
+                      style: TextStyle(color: t.muted)),
                 const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

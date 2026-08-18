@@ -42,23 +42,27 @@ class _MyCoursesView extends StatelessWidget {
     );
   }
 
-  Widget _empty(BuildContext context) => Center(
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(Icons.menu_book_outlined, size: 64, color: Colors.grey.shade400),
-        const SizedBox(height: 12),
-        const Text('Вы ещё не записаны ни на один курс'),
-        const SizedBox(height: 12),
-        FilledButton(
-          onPressed: () => context.go('/catalog'),
-          child: const Text('Перейти в каталог'),
-        ),
-      ],
-    ),
-  );
+  Widget _empty(BuildContext context) {
+    final t = context.tokens;
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.menu_book_outlined, size: 64, color: t.faint),
+          const SizedBox(height: 12),
+          const Text('Вы ещё не записаны ни на один курс'),
+          const SizedBox(height: 12),
+          FilledButton(
+            onPressed: () => context.go('/catalog'),
+            child: const Text('Перейти в каталог'),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _tile(BuildContext context, MyCourse it) {
+    final t = context.tokens;
     final done = it.enrollment.status.isCompleted;
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -66,35 +70,35 @@ class _MyCoursesView extends StatelessWidget {
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         onTap: () => context.go('/courses/${it.course.id}'),
         title: Text(it.course.title,
-            style: const TextStyle(fontWeight: FontWeight.bold)),
+            style: TextStyle(fontWeight: FontWeight.bold, color: t.text)),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(it.course.category,
-                  style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+                  style: TextStyle(color: t.muted, fontSize: 12)),
               const SizedBox(height: 6),
               ClipRRect(
                 borderRadius: BorderRadius.circular(6),
                 child: LinearProgressIndicator(
                   value: it.enrollment.progress / 100,
                   minHeight: 8,
-                  backgroundColor: Colors.grey.shade200,
-                  valueColor: const AlwaysStoppedAnimation(AppColors.brand),
+                  backgroundColor: t.ringTrack,
+                  valueColor: AlwaysStoppedAnimation(t.accent),
                 ),
               ),
             ],
           ),
         ),
         trailing: done
-            ? const Chip(
-          avatar: Icon(Icons.verified, color: AppColors.brand, size: 18),
-          label: Text('Завершён'),
+            ? Chip(
+          avatar: Icon(Icons.verified, color: t.accent, size: 18),
+          label: const Text('Завершён'),
         )
             : Text('${it.enrollment.progress.toStringAsFixed(0)}%',
-            style: const TextStyle(
-                color: AppColors.brand,
+            style: TextStyle(
+                color: t.accent,
                 fontWeight: FontWeight.bold,
                 fontSize: 16)),
       ),

@@ -48,6 +48,7 @@ class _CatalogView extends StatelessWidget {
                 DropdownButton<String?>(
                   value: ctrl.category,
                   hint: const Text('Все направления'),
+                  underline: const SizedBox.shrink(),
                   items: [
                     const DropdownMenuItem(
                         value: null, child: Text('Все направления')),
@@ -68,7 +69,9 @@ class _CatalogView extends StatelessWidget {
   Widget _buildBody(BuildContext context, CatalogController ctrl) {
     if (ctrl.loading) return const Center(child: CircularProgressIndicator());
     if (ctrl.error != null) return Center(child: Text('Ошибка: ${ctrl.error}'));
-    if (ctrl.courses.isEmpty) return const Center(child: Text('Курсы не найдены'));
+    if (ctrl.courses.isEmpty) {
+      return const Center(child: Text('Курсы не найдены'));
+    }
     return LayoutBuilder(builder: (context, c) {
       final cols = (c.maxWidth / 340).floor().clamp(1, 4);
       return GridView.builder(
@@ -92,67 +95,73 @@ class _CourseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.tokens;
     return Card(
       child: InkWell(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         onTap: () => context.go('/courses/${course.id}'),
         child: Padding(
           padding: const EdgeInsets.all(18),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.brand.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(course.category,
-                    style: const TextStyle(
-                        color: AppColors.brand,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600)),
-              ),
+              _CategoryChip(course.category),
               const SizedBox(height: 12),
               Text(course.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style:
-                  const TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+                  style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                      color: t.text)),
               const SizedBox(height: 8),
               Expanded(
                 child: Text(course.description,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                    style: TextStyle(color: t.muted, fontSize: 13)),
               ),
               const SizedBox(height: 8),
               Row(
                 children: [
-                  Icon(Icons.menu_book_outlined,
-                      size: 16, color: Colors.grey.shade500),
+                  Icon(Icons.menu_book_outlined, size: 16, color: t.faint),
                   const SizedBox(width: 4),
                   Text('${course.lessonsCount} уроков',
-                      style:
-                      TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+                      style: TextStyle(color: t.muted, fontSize: 12)),
                   if (course.hasQuiz) ...[
                     const SizedBox(width: 12),
-                    Icon(Icons.quiz_outlined,
-                        size: 16, color: Colors.grey.shade500),
+                    Icon(Icons.quiz_outlined, size: 16, color: t.faint),
                     const SizedBox(width: 4),
-                    Text('тест',
-                        style: TextStyle(
-                            color: Colors.grey.shade600, fontSize: 12)),
+                    Text('тест', style: TextStyle(color: t.muted, fontSize: 12)),
                   ],
                   const Spacer(),
-                  const Icon(Icons.arrow_forward,
-                      size: 18, color: AppColors.brand),
+                  Icon(Icons.arrow_forward, size: 18, color: t.accent),
                 ],
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _CategoryChip extends StatelessWidget {
+  final String label;
+  const _CategoryChip(this.label);
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.tokens;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: t.accentSoft,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(label,
+          style: TextStyle(
+              color: t.accentInk, fontSize: 12, fontWeight: FontWeight.w600)),
     );
   }
 }

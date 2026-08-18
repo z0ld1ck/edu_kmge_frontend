@@ -93,10 +93,12 @@ class _DashboardView extends StatelessWidget {
   }
 
   Widget _coursesHeader(BuildContext context) {
+    final t = context.tokens;
     return Row(
       children: [
-        const Text('Курсы и статистика',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        Text('Курсы и статистика',
+            style: TextStyle(
+                fontSize: 20, fontWeight: FontWeight.bold, color: t.text)),
         const Spacer(),
         FilledButton.icon(
           onPressed: () => context.go('/admin/courses/new'),
@@ -108,6 +110,7 @@ class _DashboardView extends StatelessWidget {
   }
 
   Widget _coursesTable(BuildContext context, DashboardController ctrl) {
+    final t = context.tokens;
     return Card(
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
@@ -127,10 +130,8 @@ class _DashboardView extends StatelessWidget {
                 DataCell(Text(c.title)),
                 DataCell(Text(c.category)),
                 DataCell(c.isPublished
-                    ? const Text('Опубликован',
-                    style: TextStyle(color: AppColors.brand))
-                    : Text('Черновик',
-                    style: TextStyle(color: Colors.grey.shade600))),
+                    ? Text('Опубликован', style: TextStyle(color: t.accent))
+                    : Text('Черновик', style: TextStyle(color: t.muted))),
                 DataCell(Text('${ctrl.statFor(c.id)?.enrolled ?? 0}')),
                 DataCell(Text('${ctrl.statFor(c.id)?.completed ?? 0}')),
                 DataCell(Text(ctrl.statFor(c.id)?.avgScore == null
@@ -144,8 +145,7 @@ class _DashboardView extends StatelessWidget {
                       onPressed: () => context.go('/admin/courses/${c.id}'),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.delete_outline,
-                          size: 20, color: Colors.redAccent),
+                      icon: Icon(Icons.delete_outline, size: 20, color: t.danger),
                       onPressed: () => _confirmDelete(context, c.id),
                     ),
                   ],
@@ -166,23 +166,24 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.tokens;
     return Container(
       width: 210,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: t.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: t.border),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.brand.withOpacity(0.1),
+              color: t.accentSoft,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: AppColors.brand),
+            child: Icon(icon, color: t.accent),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -190,11 +191,11 @@ class _StatCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(value,
-                    style: const TextStyle(
-                        fontSize: 24, fontWeight: FontWeight.bold)),
-                Text(label,
-                    style:
-                    TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+                    style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: t.text)),
+                Text(label, style: TextStyle(color: t.muted, fontSize: 12)),
               ],
             ),
           ),

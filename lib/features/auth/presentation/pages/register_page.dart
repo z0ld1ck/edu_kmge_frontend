@@ -31,7 +31,8 @@ class _RegisterPageState extends State<RegisterPage> {
     if (_name.text.trim().isEmpty ||
         _email.text.trim().isEmpty ||
         _password.text.length < 6) {
-      setState(() => _error = 'Заполните все поля, пароль — не короче 6 символов');
+      setState(() =>
+      _error = 'Заполните все поля, пароль — не короче 6 символов');
       return;
     }
     setState(() {
@@ -52,6 +53,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.tokens;
     return Scaffold(
       body: Center(
         child: SingleChildScrollView(
@@ -60,36 +62,39 @@ class _RegisterPageState extends State<RegisterPage> {
             margin: const EdgeInsets.all(24),
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: t.surface,
               borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: t.border),
               boxShadow: [
                 BoxShadow(
-                    color: Colors.black.withOpacity(0.06),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8))
+                    color: Colors.black.withOpacity(0.10),
+                    blurRadius: 30,
+                    offset: const Offset(0, 12))
               ],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text('Регистрация',
+                Text('Регистрация',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.brand)),
+                        color: t.accent)),
                 const SizedBox(height: 24),
                 TextField(
                   controller: _name,
                   decoration: const InputDecoration(
-                      labelText: 'ФИО', prefixIcon: Icon(Icons.person_outline)),
+                      labelText: 'ФИО',
+                      prefixIcon: Icon(Icons.person_outline)),
                 ),
                 const SizedBox(height: 14),
                 TextField(
                   controller: _email,
                   decoration: const InputDecoration(
-                      labelText: 'Email', prefixIcon: Icon(Icons.email_outlined)),
+                      labelText: 'Email',
+                      prefixIcon: Icon(Icons.email_outlined)),
                   keyboardType: TextInputType.emailAddress,
                 ),
                 const SizedBox(height: 14),
@@ -98,11 +103,12 @@ class _RegisterPageState extends State<RegisterPage> {
                   obscureText: true,
                   onSubmitted: (_) => _submit(),
                   decoration: const InputDecoration(
-                      labelText: 'Пароль', prefixIcon: Icon(Icons.lock_outline)),
+                      labelText: 'Пароль',
+                      prefixIcon: Icon(Icons.lock_outline)),
                 ),
                 if (_error != null) ...[
                   const SizedBox(height: 14),
-                  Text(_error!, style: const TextStyle(color: Colors.red)),
+                  Text(_error!, style: TextStyle(color: t.danger)),
                 ],
                 const SizedBox(height: 24),
                 FilledButton(

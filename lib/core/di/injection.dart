@@ -1,11 +1,12 @@
 import 'package:get_it/get_it.dart';
 
+import '../../features/profile/presentation/controllers/profile_controller.dart';
 import '../../features/users/domain/repositories/user_repository.dart';
 import '../network/api_client.dart';
 import '../storage/token_storage.dart';
 
 // AI
-import '../../features/ai/data/sources//ai_remote_datasource.dart';
+import '../../features/ai/data/sources/ai_remote_datasource.dart';
 import '../../features/ai/data/repositories/ai_repository_impl.dart';
 import '../../features/ai/domain/repositories/ai_repository.dart';
 
@@ -16,7 +17,7 @@ import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/presentation/controllers/auth_controller.dart';
 
 // Courses
-import '../../features/courses/data/sources//course_remote_datasource.dart';
+import '../../features/courses/data/sources/course_remote_datasource.dart';
 import '../../features/courses/data/repositories/course_repository_impl.dart';
 import '../../features/courses/domain/repositories/course_repository.dart';
 import '../../features/courses/presentation/controllers/catalog_controller.dart';
@@ -46,6 +47,7 @@ import '../../features/analytics/presentation/controllers/dashboard_controller.d
 import '../../features/users/data/sources/user_remote_datasource.dart';
 import '../../features/users/data/repositories/user_repository_impl.dart';
 import '../../features/users/presentation/controllers/users_controller.dart';
+import '../theme/theme_controller.dart';
 
 /// Глобальный service locator.
 final sl = GetIt.instance;
@@ -54,6 +56,9 @@ void setupDependencies() {
   // ---- Core ----
   sl.registerLazySingleton(() => TokenStorage());
   sl.registerLazySingleton(() => ApiClient(sl()));
+  sl.registerLazySingleton(() => ThemeController());
+
+
 
   // ---- Data sources ----
   sl.registerLazySingleton(() => AuthRemoteDataSource(sl()));
@@ -89,4 +94,5 @@ void setupDependencies() {
   sl.registerFactory(() => CertificatesController(sl()));
   sl.registerFactory(() => DashboardController(sl(), sl()));
   sl.registerFactory(() => UsersController(sl()));
+  sl.registerFactory(() => ProfileController(sl(), sl()));
 }

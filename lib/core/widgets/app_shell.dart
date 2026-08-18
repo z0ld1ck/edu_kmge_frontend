@@ -23,6 +23,7 @@ class AppShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.tokens;
     final user = context.watch<AuthController>().user;
     final wide = MediaQuery.of(context).size.width >= 900;
 
@@ -65,6 +66,7 @@ class AppShell extends StatelessWidget {
               tooltip: user?.fullName ?? '',
               icon: const Icon(Icons.account_circle_outlined),
               onSelected: (v) {
+                if (v == 'profile') context.go('/profile');
                 if (v == 'logout') context.read<AuthController>().logout();
               },
               itemBuilder: (c) => [
@@ -74,52 +76,60 @@ class AppShell extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(user?.fullName ?? '',
-                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, color: t.text)),
                       Text((user?.role ?? UserRole.student).label,
-                          style: const TextStyle(
-                              fontSize: 12, color: Colors.grey)),
+                          style: TextStyle(fontSize: 12, color: t.muted)),
                     ],
                   ),
                 ),
                 const PopupMenuDivider(),
+                const PopupMenuItem(
+                    value: 'profile', child: Text('Профиль')),
                 const PopupMenuItem(value: 'logout', child: Text('Выйти')),
               ],
             ),
           ),
         ],
       ),
-      drawer: wide ? null : Drawer(child: SafeArea(child: navList())),
+      drawer: wide
+          ? null
+          : Drawer(
+        backgroundColor: t.surface,
+        child: SafeArea(child: navList()),
+      ),
       body: Row(
         children: [
           if (wide)
             Container(
               width: 260,
-              color: Colors.white,
+              decoration: BoxDecoration(
+                color: t.surface,
+                border: Border(right: BorderSide(color: t.border)),
+              ),
               child: Column(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(20),
                     alignment: Alignment.centerLeft,
                     child: Row(
-                      children: const [
-                        Icon(Icons.eco, color: AppColors.brand),
-                        SizedBox(width: 8),
+                      children: [
+                        Icon(Icons.eco, color: t.accent),
+                        const SizedBox(width: 8),
                         Text('KMGE Edu',
                             style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
-                                color: AppColors.brand)),
+                                color: t.accent)),
                       ],
                     ),
                   ),
-                  const Divider(height: 1),
+                  Divider(height: 1, color: t.border),
                   Expanded(child: navList()),
                 ],
               ),
             ),
-          Expanded(
-            child: Container(color: AppColors.background, child: body),
-          ),
+          Expanded(child: Container(color: t.bg, child: body)),
         ],
       ),
     );
@@ -142,18 +152,18 @@ class _NavTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.tokens;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
       child: Material(
-        color: selected ? AppColors.brand.withOpacity(0.1) : Colors.transparent,
+        color: selected ? t.accentSoft : Colors.transparent,
         borderRadius: BorderRadius.circular(10),
         child: ListTile(
-          leading:
-          Icon(item.icon, color: selected ? AppColors.brand : Colors.grey.shade700),
+          leading: Icon(item.icon, color: selected ? t.accent : t.muted),
           title: Text(item.label,
               style: TextStyle(
-                  color: selected ? AppColors.brand : Colors.grey.shade800,
-                  fontWeight: selected ? FontWeight.bold : FontWeight.normal)),
+                  color: selected ? t.accentInk : t.text,
+                  fontWeight: selected ? FontWeight.bold : FontWeight.w500)),
           shape:
           RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           onTap: onTap,

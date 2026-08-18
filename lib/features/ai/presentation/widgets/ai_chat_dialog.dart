@@ -43,8 +43,8 @@ class _AiChatDialogState extends State<AiChatDialog> {
       final reply = await widget.repository.chat(widget.courseId, text, history);
       setState(() => _messages.add({'role': 'assistant', 'content': reply}));
     } catch (e) {
-      setState(() =>
-          _messages.add({'role': 'assistant', 'content': '⚠️ ${e.toString()}'}));
+      setState(() => _messages
+          .add({'role': 'assistant', 'content': '⚠️ ${e.toString()}'}));
     } finally {
       setState(() => _busy = false);
       _scrollDown();
@@ -62,7 +62,9 @@ class _AiChatDialogState extends State<AiChatDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.tokens;
     return Dialog(
+      backgroundColor: t.surface,
       child: SizedBox(
         width: 520,
         height: 600,
@@ -70,9 +72,10 @@ class _AiChatDialogState extends State<AiChatDialog> {
           children: [
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                color: AppColors.brand,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+              decoration: BoxDecoration(
+                color: t.accent,
+                borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(12)),
               ),
               child: Row(
                 children: [
@@ -104,13 +107,13 @@ class _AiChatDialogState extends State<AiChatDialog> {
             ),
             Expanded(
               child: _messages.isEmpty
-                  ? const Center(
+                  ? Center(
                 child: Padding(
-                  padding: EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(24),
                   child: Text(
                     'Задайте вопрос по материалам курса —\nассистент ответит на основе лекций.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey),
+                    style: TextStyle(color: t.muted),
                   ),
                 ),
               )
@@ -118,7 +121,7 @@ class _AiChatDialogState extends State<AiChatDialog> {
                 controller: _scroll,
                 padding: const EdgeInsets.all(12),
                 itemCount: _messages.length,
-                itemBuilder: (c, i) => _bubble(_messages[i]),
+                itemBuilder: (c, i) => _bubble(context, _messages[i]),
               ),
             ),
             if (_busy) const LinearProgressIndicator(minHeight: 2),
@@ -138,7 +141,7 @@ class _AiChatDialogState extends State<AiChatDialog> {
                   IconButton.filled(
                     onPressed: _busy ? null : _send,
                     icon: const Icon(Icons.send),
-                    style: IconButton.styleFrom(backgroundColor: AppColors.brand),
+                    style: IconButton.styleFrom(backgroundColor: t.accent),
                   ),
                 ],
               ),
@@ -149,7 +152,8 @@ class _AiChatDialogState extends State<AiChatDialog> {
     );
   }
 
-  Widget _bubble(Map<String, String> m) {
+  Widget _bubble(BuildContext context, Map<String, String> m) {
+    final t = context.tokens;
     final isUser = m['role'] == 'user';
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
@@ -158,11 +162,11 @@ class _AiChatDialogState extends State<AiChatDialog> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         constraints: const BoxConstraints(maxWidth: 380),
         decoration: BoxDecoration(
-          color: isUser ? AppColors.brand : Colors.grey.shade100,
+          color: isUser ? t.accent : t.surface2,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Text(m['content'] ?? '',
-            style: TextStyle(color: isUser ? Colors.white : Colors.black87)),
+            style: TextStyle(color: isUser ? Colors.white : t.text)),
       ),
     );
   }

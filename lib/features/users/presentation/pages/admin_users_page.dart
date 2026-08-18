@@ -103,31 +103,34 @@ class _UsersView extends StatelessWidget {
   }
 
   Widget _tile(BuildContext context, User u) {
+    final t = context.tokens;
+    final rc = _roleColor(t, u.role);
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: _roleColor(u.role).withOpacity(0.15),
-          child: Icon(Icons.person, color: _roleColor(u.role)),
+          backgroundColor: rc.withOpacity(0.15),
+          child: Icon(Icons.person, color: rc),
         ),
-        title:
-        Text(u.fullName, style: const TextStyle(fontWeight: FontWeight.w600)),
+        title: Text(u.fullName,
+            style: TextStyle(fontWeight: FontWeight.w600, color: t.text)),
         subtitle: Text(
-            '${u.email}${u.department != null ? " • ${u.department}" : ""}'),
+            '${u.email}${u.department != null ? " • ${u.department}" : ""}',
+            style: TextStyle(color: t.muted)),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Chip(
-              label: Text(u.role.label, style: const TextStyle(fontSize: 12)),
-              backgroundColor: _roleColor(u.role).withOpacity(0.12),
+              label: Text(u.role.label,
+                  style: TextStyle(fontSize: 12, color: rc)),
+              backgroundColor: rc.withOpacity(0.12),
               side: BorderSide.none,
             ),
             IconButton(
                 icon: const Icon(Icons.edit_outlined, size: 20),
                 onPressed: () => _openForm(context, user: u)),
             IconButton(
-                icon: const Icon(Icons.delete_outline,
-                    size: 20, color: Colors.redAccent),
+                icon: Icon(Icons.delete_outline, size: 20, color: t.danger),
                 onPressed: () => _delete(context, u)),
           ],
         ),
@@ -135,10 +138,10 @@ class _UsersView extends StatelessWidget {
     );
   }
 
-  static Color _roleColor(UserRole role) => switch (role) {
-    UserRole.admin => Colors.deepPurple,
-    UserRole.teacher => Colors.orange,
-    _ => AppColors.brand,
+  static Color _roleColor(AppTokens t, UserRole role) => switch (role) {
+    UserRole.admin => t.info,
+    UserRole.teacher => t.amber,
+    _ => t.accent,
   };
 }
 
@@ -199,6 +202,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.tokens;
     return AlertDialog(
       title: Text(_isEdit ? 'Редактировать пользователя' : 'Новый пользователь'),
       content: SizedBox(
@@ -249,7 +253,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
               ),
               if (_error != null) ...[
                 const SizedBox(height: 12),
-                Text(_error!, style: const TextStyle(color: Colors.red)),
+                Text(_error!, style: TextStyle(color: t.danger)),
               ],
             ],
           ),
