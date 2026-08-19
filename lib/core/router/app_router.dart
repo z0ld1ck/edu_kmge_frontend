@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/analytics/presentation/pages/admin_dashboard_page.dart';
+import '../../features/assignments/presentation/pages/admin_assignments_page.dart';
 import '../../features/auth/presentation/controllers/auth_controller.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
@@ -43,6 +44,9 @@ GoRouter buildRouter(AuthController auth) {
             CourseDetailPage(courseId: int.parse(s.pathParameters['id']!)),
       ),
       GoRoute(path: '/admin', builder: (c, s) => const AdminDashboardPage()),
+      GoRoute(
+          path: '/admin/assignments',
+          builder: (c, s) => const AdminAssignmentsPage()),
       GoRoute(
           path: '/admin/users', builder: (c, s) => const AdminUsersPage()),
       GoRoute(

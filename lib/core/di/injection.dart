@@ -1,9 +1,17 @@
 import 'package:get_it/get_it.dart';
 
+//Profile
 import '../../features/profile/presentation/controllers/profile_controller.dart';
 import '../../features/users/domain/repositories/user_repository.dart';
 import '../network/api_client.dart';
 import '../storage/token_storage.dart';
+
+// Assignments
+import '../../features/assignments/data/datasources/assignment_remote_datasource.dart';
+import '../../features/assignments/data/repositories/assignment_repository_impl.dart';
+import '../../features/assignments/domain/repositories/assignment_repository.dart';
+import '../../features/assignments/presentation/controllers/assignments_controller.dart';
+
 
 // AI
 import '../../features/ai/data/sources/ai_remote_datasource.dart';
@@ -68,6 +76,8 @@ void setupDependencies() {
   sl.registerLazySingleton(() => AnalyticsRemoteDataSource(sl()));
   sl.registerLazySingleton(() => UserRemoteDataSource(sl()));
   sl.registerLazySingleton(() => AiRemoteDataSource(sl()));
+  sl.registerLazySingleton(() => AssignmentRemoteDataSource(sl()));
+
 
   // ---- Repositories ----
   sl.registerLazySingleton<AuthRepository>(
@@ -81,6 +91,8 @@ void setupDependencies() {
           () => AnalyticsRepositoryImpl(sl()));
   sl.registerLazySingleton<UserRepository>(() => UserRepositoryImpl(sl()));
   sl.registerLazySingleton<AiRepository>(() => AiRepositoryImpl(sl()));
+  sl.registerLazySingleton<AssignmentRepository>(
+          () => AssignmentRepositoryImpl(sl()));
 
   // ---- Global session ----
   sl.registerLazySingleton(() => AuthController(sl()));
@@ -95,4 +107,6 @@ void setupDependencies() {
   sl.registerFactory(() => DashboardController(sl(), sl()));
   sl.registerFactory(() => UsersController(sl()));
   sl.registerFactory(() => ProfileController(sl(), sl()));
+  sl.registerFactory(() => AssignmentsController(sl(), sl(), sl()));
+
 }

@@ -36,6 +36,9 @@ class AppShell extends StatelessWidget {
         const _NavItem('/admin', 'Панель управления', Icons.dashboard_outlined),
       if (user?.isStaff ?? false)
         const _NavItem('/admin/users', 'Пользователи', Icons.people_outline),
+      if (user?.isStaff ?? false)
+        const _NavItem(
+            '/admin/assignments', 'Назначения', Icons.assignment_outlined),
     ];
 
     Widget navList() => ListView(
