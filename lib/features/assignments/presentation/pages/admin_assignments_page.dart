@@ -75,7 +75,7 @@ class _AssignmentsView extends StatelessWidget {
           SizedBox(
             width: 260,
             child: DropdownButtonFormField<int?>(
-              initialValue: ctrl.filterCourseId,
+              value: ctrl.filterCourseId,
               isExpanded: true,
               decoration: const InputDecoration(
                 labelText: 'Курс',
@@ -94,7 +94,7 @@ class _AssignmentsView extends StatelessWidget {
           SizedBox(
             width: 200,
             child: DropdownButtonFormField<String?>(
-              initialValue: ctrl.filterStatus,
+              value: ctrl.filterStatus,
               isExpanded: true,
               decoration: const InputDecoration(
                 labelText: 'Статус',
@@ -368,7 +368,7 @@ class _AssignDialogState extends State<_AssignDialog> {
             mainAxisSize: MainAxisSize.min,
             children: [
               DropdownButtonFormField<int>(
-                initialValue: _courseId,
+                value: _courseId,
                 isExpanded: true,
                 decoration: const InputDecoration(labelText: 'Курс *'),
                 items: [
@@ -542,7 +542,7 @@ class _AssignDialogState extends State<_AssignDialog> {
           style: TextStyle(color: t.faint));
     }
     return DropdownButtonFormField<String>(
-      initialValue: _department,
+      value: _department,
       isExpanded: true,
       decoration: const InputDecoration(labelText: 'Подразделение *'),
       items: [

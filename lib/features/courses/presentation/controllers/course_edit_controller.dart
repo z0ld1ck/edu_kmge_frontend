@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../../ai/domain/repositories/ai_repository.dart';
 import '../../domain/entities/course.dart';
+import '../../domain/entities/lesson.dart';
 import '../../domain/entities/quiz.dart';
 import '../../domain/entities/quiz_draft.dart';
 import '../../domain/repositories/course_repository.dart';
@@ -77,6 +78,7 @@ class CourseEditController extends ChangeNotifier {
     required String title,
     required String content,
     String? videoUrl,
+    List<LessonMaterial> materials = const [],
   }) async {
     await _repo.addLesson(
       courseId!,
@@ -84,19 +86,65 @@ class CourseEditController extends ChangeNotifier {
       content: content,
       videoUrl: videoUrl,
       order: course?.lessons.length ?? 0,
+      materials: materials,
     );
     await load(courseId!);
   }
 
   Future<void> updateLesson(
-      int lessonId, {
-        required String title,
-        required String content,
-        String? videoUrl,
-      }) async {
-    await _repo.updateLesson(lessonId,
-        title: title, content: content, videoUrl: videoUrl);
+    int lessonId, {
+    required String title,
+    required String content,
+    String? videoUrl,
+    List<LessonMaterial>? materials,
+  }) async {
+    await _repo.updateLesson(
+      lessonId,
+      title: title,
+      content: content,
+      videoUrl: videoUrl,
+      materials: materials,
+    );
     await load(courseId!);
+  }
+
+  // ---- Материалы (действия сразу применяются на сервере) ----
+  Future<Lesson> addMaterialLink(
+    int lessonId, {
+    required String title,
+    required String url,
+    String type = 'link',
+  }) async {
+    final lesson = await _repo.addMaterialLink(
+      lessonId,
+      title: title,
+      url: url,
+      type: type,
+    );
+    await load(courseId!);
+    return lesson;
+  }
+
+  Future<Lesson> uploadMaterial(
+    int lessonId, {
+    required List<int> bytes,
+    required String filename,
+    required String title,
+  }) async {
+    final lesson = await _repo.uploadMaterial(
+      lessonId,
+      bytes: bytes,
+      filename: filename,
+      title: title,
+    );
+    await load(courseId!);
+    return lesson;
+  }
+
+  Future<Lesson> deleteMaterial(int lessonId, String materialId) async {
+    final lesson = await _repo.deleteMaterial(lessonId, materialId);
+    await load(courseId!);
+    return lesson;
   }
 
   Future<void> deleteLesson(int lessonId) async {

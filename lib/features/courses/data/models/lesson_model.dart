@@ -8,6 +8,7 @@ class LessonModel extends Lesson {
     required super.content,
     super.videoUrl,
     required super.order,
+    super.materials,
   });
 
   factory LessonModel.fromJson(Map<String, dynamic> j) => LessonModel(
@@ -17,5 +18,8 @@ class LessonModel extends Lesson {
     content: (j['content'] ?? '') as String,
     videoUrl: j['video_url'] as String?,
     order: (j['order'] ?? 0) as int,
+    materials: ((j['materials'] ?? const []) as List)
+        .map((e) => LessonMaterial.fromJson((e as Map).cast<String, dynamic>()))
+        .toList(),
   );
 }

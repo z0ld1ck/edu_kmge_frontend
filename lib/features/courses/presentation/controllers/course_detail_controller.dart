@@ -14,6 +14,7 @@ class CourseDetailController extends ChangeNotifier {
 
   CourseDetail? course;
   bool enrolled = false;
+  bool courseCompleted = false;
   Set<int> completedLessonIds = {};
   bool aiEnabled = false;
   bool loading = true;
@@ -26,7 +27,10 @@ class CourseDetailController extends ChangeNotifier {
     try {
       final detail = await _courseRepo.detail(courseId);
       final my = await _learningRepo.myCourses();
-      final isEnrolled = my.any((m) => m.course.id == courseId);
+      final mine = my.where((m) => m.course.id == courseId).toList();
+      final isEnrolled = mine.isNotEmpty;
+      final completedCourse =
+          isEnrolled && mine.first.enrollment.status.isCompleted;
       Set<int> completed = {};
       if (isEnrolled) {
         completed = (await _learningRepo.completedLessonIds(courseId)).toSet();
@@ -34,6 +38,7 @@ class CourseDetailController extends ChangeNotifier {
       final ai = await _aiRepo.isEnabled();
       course = detail;
       enrolled = isEnrolled;
+      courseCompleted = completedCourse;
       completedLessonIds = completed;
       aiEnabled = ai;
     } catch (e) {
@@ -59,4 +64,27 @@ class CourseDetailController extends ChangeNotifier {
   int get doneLessons =>
       course?.lessons.where((l) => completedLessonIds.contains(l.id)).length ?? 0;
   bool get allLessonsDone => totalLessons > 0 && doneLessons == totalLessons;
+
+  bool isLessonDone(int lessonId) => completedLessonIds.contains(lessonId);
+
+  /// Урок с индексом [index] открыт, если пройдены все предыдущие уроки.
+  bool isLessonUnlocked(int index) {
+    if (!enrolled) return false;
+    final lessons = course?.lessons ?? const [];
+    for (var i = 0; i < index && i < lessons.length; i++) {
+      if (!completedLessonIds.contains(lessons[i].id)) return false;
+    }
+    return true;
+  }
+
+  /// Индекс текущего (первого доступного и не пройденного) урока, иначе null.
+  int? get currentLessonIndex {
+    final lessons = course?.lessons ?? const [];
+    for (var i = 0; i < lessons.length; i++) {
+      if (!completedLessonIds.contains(lessons[i].id)) {
+        return isLessonUnlocked(i) ? i : null;
+      }
+    }
+    return null;
+  }
 }

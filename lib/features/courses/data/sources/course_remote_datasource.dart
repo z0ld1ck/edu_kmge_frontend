@@ -13,11 +13,14 @@ class CourseRemoteDataSource {
     String? category,
     bool publishedOnly = true,
   }) async {
-    final data = await _api.get('/api/courses', query: {
-      if (q != null && q.isNotEmpty) 'q': q,
-      if (category != null) 'category': category,
-      'published_only': publishedOnly,
-    });
+    final data = await _api.get(
+      '/api/courses',
+      query: {
+        if (q != null && q.isNotEmpty) 'q': q,
+        if (category != null) 'category': category,
+        'published_only': publishedOnly,
+      },
+    );
     return (data as List)
         .map((e) => CourseModel.fromJson(e as Map<String, dynamic>))
         .toList();
@@ -55,6 +58,39 @@ class CourseRemoteDataSource {
 
   Future<void> deleteLesson(int lessonId) =>
       _api.delete('/api/courses/lessons/$lessonId');
+
+  Future<LessonModel> addMaterialLink(
+    int lessonId,
+    Map<String, dynamic> body,
+  ) async {
+    final data = await _api.post(
+      '/api/courses/lessons/$lessonId/materials/link',
+      body: body,
+    );
+    return LessonModel.fromJson(data as Map<String, dynamic>);
+  }
+
+  Future<LessonModel> uploadMaterial(
+    int lessonId, {
+    required List<int> bytes,
+    required String filename,
+    required String title,
+  }) async {
+    final data = await _api.uploadFile(
+      '/api/courses/lessons/$lessonId/materials/upload',
+      bytes: bytes,
+      filename: filename,
+      fields: {'title': title},
+    );
+    return LessonModel.fromJson(data as Map<String, dynamic>);
+  }
+
+  Future<LessonModel> deleteMaterial(int lessonId, String materialId) async {
+    final data = await _api.delete(
+      '/api/courses/lessons/$lessonId/materials/$materialId',
+    );
+    return LessonModel.fromJson(data as Map<String, dynamic>);
+  }
 
   Future<QuizModel> quiz(int courseId) async {
     final data = await _api.get('/api/courses/$courseId/quiz');

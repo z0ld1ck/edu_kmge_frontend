@@ -1,7 +1,9 @@
+import 'dart:typed_data';
+import 'dart:html' as html;
+import '../../../../core/widgets/markdown_view.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_shell.dart';
@@ -9,6 +11,7 @@ import '../../domain/entities/course.dart';
 import '../../domain/entities/lesson.dart';
 import '../../domain/entities/quiz_draft.dart';
 import '../controllers/course_edit_controller.dart';
+import '../../../../core/widgets/markdown_view.dart';
 
 class AdminCourseEditPage extends StatelessWidget {
   final int? courseId; // null => создание
@@ -29,6 +32,7 @@ class AdminCourseEditPage extends StatelessWidget {
 
 class _EditView extends StatefulWidget {
   final bool isNew;
+
   const _EditView({required this.isNew});
 
   @override
@@ -64,38 +68,38 @@ class _EditViewState extends State<_EditView>
           : ctrl.error != null
           ? Center(child: Text('Ошибка: ${ctrl.error}'))
           : Column(
-        children: [
-          Material(
-            color: t.surface,
-            child: TabBar(
-              controller: _tabs,
-              labelColor: t.accentInk,
-              unselectedLabelColor: t.muted,
-              indicatorColor: t.accent,
-              tabs: const [
-                Tab(text: 'Основное'),
-                Tab(text: 'Уроки'),
-                Tab(text: 'Тест'),
-              ],
-            ),
-          ),
-          Divider(height: 1, color: t.border),
-          Expanded(
-            child: TabBarView(
-              controller: _tabs,
               children: [
-                _MetaTab(onSaved: () => _tabs.animateTo(1)),
-                ctrl.courseId == null
-                    ? _lockNotice(context)
-                    : const _LessonsTab(),
-                ctrl.courseId == null
-                    ? _lockNotice(context)
-                    : const _QuizTab(),
+                Material(
+                  color: t.surface,
+                  child: TabBar(
+                    controller: _tabs,
+                    labelColor: t.accentInk,
+                    unselectedLabelColor: t.muted,
+                    indicatorColor: t.accent,
+                    tabs: const [
+                      Tab(text: 'Основное'),
+                      Tab(text: 'Уроки'),
+                      Tab(text: 'Тест'),
+                    ],
+                  ),
+                ),
+                Divider(height: 1, color: t.border),
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabs,
+                    children: [
+                      _MetaTab(onSaved: () => _tabs.animateTo(1)),
+                      ctrl.courseId == null
+                          ? _lockNotice(context)
+                          : const _LessonsTab(),
+                      ctrl.courseId == null
+                          ? _lockNotice(context)
+                          : const _QuizTab(),
+                    ],
+                  ),
+                ),
               ],
             ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -103,9 +107,10 @@ class _EditViewState extends State<_EditView>
     child: Padding(
       padding: const EdgeInsets.all(24),
       child: Text(
-          'Сначала сохраните основные данные курса на вкладке «Основное».',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: context.tokens.muted)),
+        'Сначала сохраните основные данные курса на вкладке «Основное».',
+        textAlign: TextAlign.center,
+        style: TextStyle(color: context.tokens.muted),
+      ),
     ),
   );
 }
@@ -113,6 +118,7 @@ class _EditViewState extends State<_EditView>
 // ---------- Вкладка «Основное» ----------
 class _MetaTab extends StatefulWidget {
   final VoidCallback onSaved;
+
   const _MetaTab({required this.onSaved});
 
   @override
@@ -127,6 +133,7 @@ class _MetaTabState extends State<_MetaTab> {
   bool _published = false;
   bool _certificate = true;
   bool _busy = false;
+  bool _preview = false;
   String? _error;
   bool _initialized = false;
 
@@ -152,15 +159,17 @@ class _MetaTabState extends State<_MetaTab> {
       await context.read<CourseEditController>().saveMeta(
         title: _title.text.trim(),
         description: _desc.text.trim(),
-        category:
-        _category.text.trim().isEmpty ? 'Общее' : _category.text.trim(),
+        category: _category.text.trim().isEmpty
+            ? 'Общее'
+            : _category.text.trim(),
         passScore: int.tryParse(_passScore.text) ?? 80,
         certificateEnabled: _certificate,
         isPublished: _published,
       );
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Сохранено')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Сохранено')));
         widget.onSaved();
       }
     } catch (e) {
@@ -187,9 +196,9 @@ class _MetaTabState extends State<_MetaTab> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               TextField(
-                  controller: _title,
-                  decoration:
-                  const InputDecoration(labelText: 'Название курса')),
+                controller: _title,
+                decoration: const InputDecoration(labelText: 'Название курса'),
+              ),
               const SizedBox(height: 14),
               TextField(
                 controller: _desc,
@@ -201,10 +210,11 @@ class _MetaTabState extends State<_MetaTab> {
                 children: [
                   Expanded(
                     child: TextField(
-                        controller: _category,
-                        decoration: const InputDecoration(
-                            labelText:
-                            'Направление (напр. Промбезопасность)')),
+                      controller: _category,
+                      decoration: const InputDecoration(
+                        labelText: 'Направление (напр. Промбезопасность)',
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 14),
                   SizedBox(
@@ -212,8 +222,9 @@ class _MetaTabState extends State<_MetaTab> {
                     child: TextField(
                       controller: _passScore,
                       keyboardType: TextInputType.number,
-                      decoration:
-                      const InputDecoration(labelText: 'Проходной балл, %'),
+                      decoration: const InputDecoration(
+                        labelText: 'Проходной балл, %',
+                      ),
                     ),
                   ),
                 ],
@@ -275,9 +286,10 @@ class _LessonsTab extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              Text('Уроков: ${lessons.length}',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, color: t.text)),
+              Text(
+                'Уроков: ${lessons.length}',
+                style: TextStyle(fontWeight: FontWeight.bold, color: t.text),
+              ),
               const Spacer(),
               FilledButton.icon(
                 onPressed: () => _edit(context),
@@ -291,40 +303,48 @@ class _LessonsTab extends StatelessWidget {
           child: lessons.isEmpty
               ? const Center(child: Text('Уроков пока нет'))
               : ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            children: [
-              for (var i = 0; i < lessons.length; i++)
-                Card(
-                  margin: const EdgeInsets.only(bottom: 10),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: t.accentSoft,
-                      child: Text('${i + 1}',
-                          style: TextStyle(color: t.accent)),
-                    ),
-                    title: Text(lessons[i].title),
-                    subtitle: Text(lessons[i].content,
-                        maxLines: 1, overflow: TextOverflow.ellipsis),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit_outlined, size: 20),
-                          onPressed: () =>
-                              _edit(context, lesson: lessons[i]),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  children: [
+                    for (var i = 0; i < lessons.length; i++)
+                      Card(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: t.accentSoft,
+                            child: Text(
+                              '${i + 1}',
+                              style: TextStyle(color: t.accent),
+                            ),
+                          ),
+                          title: Text(lessons[i].title),
+                          subtitle: Text(
+                            lessons[i].content,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit_outlined, size: 20),
+                                onPressed: () =>
+                                    _edit(context, lesson: lessons[i]),
+                              ),
+                              IconButton(
+                                icon: Icon(
+                                  Icons.delete_outline,
+                                  size: 20,
+                                  color: t.danger,
+                                ),
+                                onPressed: () =>
+                                    ctrl.deleteLesson(lessons[i].id),
+                              ),
+                            ],
+                          ),
                         ),
-                        IconButton(
-                          icon: Icon(Icons.delete_outline,
-                              size: 20, color: t.danger),
-                          onPressed: () =>
-                              ctrl.deleteLesson(lessons[i].id),
-                        ),
-                      ],
-                    ),
-                  ),
+                      ),
+                  ],
                 ),
-            ],
-          ),
         ),
       ],
     );
@@ -333,6 +353,7 @@ class _LessonsTab extends StatelessWidget {
 
 class _LessonFormDialog extends StatefulWidget {
   final Lesson? lesson;
+
   const _LessonFormDialog({this.lesson});
 
   @override
@@ -341,11 +362,65 @@ class _LessonFormDialog extends StatefulWidget {
 
 class _LessonFormDialogState extends State<_LessonFormDialog> {
   late final _title = TextEditingController(text: widget.lesson?.title ?? '');
-  late final _content =
-  TextEditingController(text: widget.lesson?.content ?? '');
-  late final _video =
-  TextEditingController(text: widget.lesson?.videoUrl ?? '');
+  late final _content = TextEditingController(
+    text: widget.lesson?.content ?? '',
+  );
+  late final _video = TextEditingController(
+    text: widget.lesson?.videoUrl ?? '',
+  );
+  late List<LessonMaterial> _materials = List.of(
+    widget.lesson?.materials ?? const <LessonMaterial>[],
+  );
   bool _busy = false;
+  bool _preview = false;
+
+  int? get _lessonId => widget.lesson?.id;
+
+
+  void _wrap(String token) {
+    final text = _content.text;
+    final sel = _content.selection;
+    final start = sel.isValid ? sel.start : text.length;
+    final end = sel.isValid ? sel.end : text.length;
+    final selected = text.substring(start, end);
+    final replaced = '$token$selected$token';
+    _content.value = TextEditingValue(
+      text: text.replaceRange(start, end, replaced),
+      selection: TextSelection.collapsed(offset: start + replaced.length),
+    );
+    setState(() {});
+  }
+
+  void _prefixLine(String prefix) {
+    final text = _content.text;
+    final sel = _content.selection;
+    final pos = sel.isValid ? sel.start : text.length;
+    var lineStart = pos > 0 ? text.lastIndexOf('\n', pos - 1) : -1;
+    lineStart = lineStart < 0 ? 0 : lineStart + 1;
+    _content.value = TextEditingValue(
+      text: text.replaceRange(lineStart, lineStart, prefix),
+      selection: TextSelection.collapsed(offset: pos + prefix.length),
+    );
+    setState(() {});
+  }
+
+  void _insert(String snippet) {
+    final text = _content.text;
+    final sel = _content.selection;
+    final pos = sel.isValid ? sel.start : text.length;
+    _content.value = TextEditingValue(
+      text: text.replaceRange(pos, pos, snippet),
+      selection: TextSelection.collapsed(offset: pos + snippet.length),
+    );
+    setState(() {});
+  }
+  @override
+  void dispose() {
+    _title.dispose();
+    _content.dispose();
+    _video.dispose();
+    super.dispose();
+  }
 
   Future<void> _save() async {
     setState(() => _busy = true);
@@ -354,20 +429,144 @@ class _LessonFormDialogState extends State<_LessonFormDialog> {
     try {
       if (widget.lesson == null) {
         await ctrl.addLesson(
-            title: _title.text.trim(),
-            content: _content.text.trim(),
-            videoUrl: video);
+          title: _title.text.trim(),
+          content: _content.text.trim(),
+          videoUrl: video,
+        );
       } else {
-        await ctrl.updateLesson(widget.lesson!.id,
-            title: _title.text.trim(),
-            content: _content.text.trim(),
-            videoUrl: video);
+        // Материалы не отправляем — ими управляют отдельные кнопки.
+        await ctrl.updateLesson(
+          widget.lesson!.id,
+          title: _title.text.trim(),
+          content: _content.text.trim(),
+          videoUrl: video,
+        );
       }
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(e.toString())));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _pickAndUpload() async {
+    // Важно: input должен быть в DOM, иначе в вебе событие change не срабатывает.
+    final input = html.FileUploadInputElement()
+      ..accept = '.pdf,application/pdf'
+      ..style.display = 'none';
+    html.document.body?.append(input);
+    input.click();
+    await input.onChange.first;
+    final files = input.files;
+    input.remove();
+    if (files == null || files.isEmpty) return;
+    final f = files.first;
+    final reader = html.FileReader();
+    reader.readAsArrayBuffer(f);
+    await reader.onLoadEnd.first;
+    final result = reader.result;
+    final Uint8List bytes = result is ByteBuffer
+        ? result.asUint8List()
+        : result as Uint8List;
+
+    setState(() => _busy = true);
+    try {
+      final lesson = await context.read<CourseEditController>().uploadMaterial(
+        _lessonId!,
+        bytes: bytes,
+        filename: f.name,
+        title: f.name,
+      );
+      setState(() => _materials = List.of(lesson.materials));
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Ошибка загрузки: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _addLinkDialog() async {
+    final titleC = TextEditingController();
+    final urlC = TextEditingController();
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: const Text('Ссылка на материал'),
+        content: SizedBox(
+          width: 420,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleC,
+                decoration: const InputDecoration(labelText: 'Название'),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: urlC,
+                decoration: const InputDecoration(
+                  labelText: 'Ссылка (URL)',
+                  prefixIcon: Icon(Icons.link, size: 18),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: const Text('Отмена'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(c, true),
+            child: const Text('Добавить'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || urlC.text.trim().isEmpty) return;
+    setState(() => _busy = true);
+    try {
+      final lesson = await context.read<CourseEditController>().addMaterialLink(
+        _lessonId!,
+        title: titleC.text.trim(),
+        url: urlC.text.trim(),
+      );
+      setState(() => _materials = List.of(lesson.materials));
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Ошибка: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _deleteMaterial(LessonMaterial m) async {
+    if (m.id == null) return;
+    setState(() => _busy = true);
+    try {
+      final lesson = await context.read<CourseEditController>().deleteMaterial(
+        _lessonId!,
+        m.id!,
+      );
+      setState(() => _materials = List.of(lesson.materials));
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Ошибка: $e')));
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -376,40 +575,232 @@ class _LessonFormDialogState extends State<_LessonFormDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.tokens;
+    final isNew = widget.lesson == null;
     return AlertDialog(
-      title: Text(widget.lesson == null ? 'Новый урок' : 'Редактировать урок'),
+      title: Text(isNew ? 'Новый урок' : 'Редактировать урок'),
       content: SizedBox(
-        width: 500,
+        width: 520,
         child: SingleChildScrollView(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
-                  controller: _title,
-                  decoration: const InputDecoration(labelText: 'Заголовок')),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _content,
-                maxLines: 8,
-                decoration: const InputDecoration(
-                    labelText: 'Содержание урока', alignLabelWithHint: true),
+                controller: _title,
+                decoration: const InputDecoration(labelText: 'Заголовок'),
               ),
               const SizedBox(height: 12),
+              _contentEditor(context),
+              const SizedBox(height: 12),
               TextField(
-                  controller: _video,
-                  decoration: const InputDecoration(
-                      labelText: 'Ссылка на видео (необязательно)')),
+                controller: _video,
+                decoration: const InputDecoration(
+                  labelText: 'Ссылка на видео (необязательно)',
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Icon(Icons.attach_file, size: 18, color: t.muted),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Материалы',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: t.text,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              if (isNew)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: t.surface2,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    'Сначала сохраните урок — после этого можно будет '
+                    'загрузить PDF или добавить ссылки.',
+                    style: TextStyle(color: t.muted, fontSize: 13),
+                  ),
+                )
+              else ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _busy ? null : _pickAndUpload,
+                        icon: const Icon(Icons.upload_file, size: 18),
+                        label: const Text('Загрузить PDF'),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _busy ? null : _addLinkDialog,
+                        icon: const Icon(Icons.link, size: 18),
+                        label: const Text('Добавить ссылку'),
+                      ),
+                    ),
+                  ],
+                ),
+                if (_busy) ...[
+                  const SizedBox(height: 10),
+                  const LinearProgressIndicator(minHeight: 2),
+                ],
+                const SizedBox(height: 10),
+                if (_materials.isEmpty)
+                  Text('Материалов пока нет', style: TextStyle(color: t.faint))
+                else
+                  for (final m in _materials) _materialTile(context, m),
+              ],
             ],
           ),
         ),
       ),
       actions: [
         TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Отмена')),
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Отмена'),
+        ),
         FilledButton(
-            onPressed: _busy ? null : _save, child: const Text('Сохранить')),
+          onPressed: _busy ? null : _save,
+          child: const Text('Сохранить'),
+        ),
       ],
+    );
+  }
+
+  Widget _contentEditor(BuildContext context) {
+    final t = context.tokens;
+    Widget btn(IconData icon, String tip, VoidCallback onTap) => IconButton(
+      tooltip: tip,
+      visualDensity: VisualDensity.compact,
+      icon: Icon(icon, size: 18),
+      onPressed: _preview ? null : onTap,
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text('Содержание урока (Markdown)',
+                style: TextStyle(color: t.muted, fontSize: 13)),
+            const Spacer(),
+            SizedBox(
+              height: 32,
+              child: SegmentedButton<bool>(
+                style: const ButtonStyle(
+                    visualDensity: VisualDensity.compact,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                segments: const [
+                  ButtonSegment(value: false, label: Text('Редактор')),
+                  ButtonSegment(value: true, label: Text('Предпросмотр')),
+                ],
+                selected: {_preview},
+                onSelectionChanged: (s) => setState(() => _preview = s.first),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: t.border),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Column(
+            children: [
+              if (!_preview)
+                Row(
+                  children: [
+                    btn(Icons.title, 'Заголовок', () => _prefixLine('## ')),
+                    btn(Icons.format_bold, 'Жирный', () => _wrap('**')),
+                    btn(Icons.format_italic, 'Курсив', () => _wrap('_')),
+                    btn(Icons.format_list_bulleted, 'Список',
+                            () => _prefixLine('- ')),
+                    btn(Icons.link, 'Ссылка',
+                            () => _insert('[текст](https://)')),
+                    btn(Icons.image_outlined, 'Картинка',
+                            () => _insert('![подпись](https://ссылка.png)')),
+                  ],
+                ),
+              if (!_preview) Divider(height: 1, color: t.border),
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: _preview
+                    ? ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 120),
+                  child: Align(
+                    alignment: Alignment.topLeft,
+                    child: _content.text.trim().isEmpty
+                        ? Text('Пусто', style: TextStyle(color: t.faint))
+                        : MarkdownView(_content.text, selectable: false),
+                  ),
+                )
+                    : TextField(
+                  controller: _content,
+                  maxLines: 10,
+                  minLines: 6,
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    isDense: true,
+                    hintText:
+                    '## Заголовок, **жирный**, - списки, ![](url)',
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _materialTile(BuildContext context, LessonMaterial m) {
+    final t = context.tokens;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        border: Border.all(color: t.border),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            m.file ? Icons.picture_as_pdf_outlined : Icons.link,
+            size: 20,
+            color: m.file ? t.accent : t.muted,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  m.title.isEmpty ? m.url : m.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: t.text, fontWeight: FontWeight.w500),
+                ),
+                Text(
+                  m.file ? 'PDF · загружен' : 'внешняя ссылка',
+                  style: TextStyle(color: t.faint, fontSize: 11),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: 'Удалить',
+            icon: Icon(Icons.delete_outline, size: 20, color: t.danger),
+            onPressed: _busy ? null : () => _deleteMaterial(m),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -442,13 +833,16 @@ class _QuizTabState extends State<_QuizTab> {
       _correct.clear();
       if (quiz != null) {
         for (final q in quiz.questions) {
-          _questions.add(QuestionDraft(
-            text: q.text,
-            answers: q.answers.map((a) => AnswerDraft(text: a.text)).toList(),
-          ));
+          _questions.add(
+            QuestionDraft(
+              text: q.text,
+              answers: q.answers.map((a) => AnswerDraft(text: a.text)).toList(),
+            ),
+          );
           _correct.add(0);
         }
-        _info = 'Внимание: правильные ответы сервер не отдаёт — '
+        _info =
+            'Внимание: правильные ответы сервер не отдаёт — '
             'отметьте их заново перед сохранением.';
       }
       _loading = false;
@@ -457,12 +851,11 @@ class _QuizTabState extends State<_QuizTab> {
 
   void _addQuestion() {
     setState(() {
-      _questions.add(QuestionDraft(answers: [
-        AnswerDraft(),
-        AnswerDraft(),
-        AnswerDraft(),
-        AnswerDraft()
-      ]));
+      _questions.add(
+        QuestionDraft(
+          answers: [AnswerDraft(), AnswerDraft(), AnswerDraft(), AnswerDraft()],
+        ),
+      );
       _correct.add(0);
     });
   }
@@ -480,7 +873,9 @@ class _QuizTabState extends State<_QuizTab> {
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(c), child: const Text('Отмена')),
+            onPressed: () => Navigator.pop(c),
+            child: const Text('Отмена'),
+          ),
           FilledButton(
             onPressed: () =>
                 Navigator.pop(c, int.tryParse(numController.text) ?? 5),
@@ -495,8 +890,9 @@ class _QuizTabState extends State<_QuizTab> {
       _info = 'Генерация вопросов…';
     });
     try {
-      final generated =
-      await context.read<CourseEditController>().generateQuizAI(num);
+      final generated = await context
+          .read<CourseEditController>()
+          .generateQuizAI(num);
       setState(() {
         for (final q in generated) {
           final correctIdx = q.answers.indexWhere((a) => a.isCorrect);
@@ -504,7 +900,7 @@ class _QuizTabState extends State<_QuizTab> {
           _correct.add(correctIdx < 0 ? 0 : correctIdx);
         }
         _info =
-        'Сгенерировано ${generated.length} вопросов. Проверьте и сохраните.';
+            'Сгенерировано ${generated.length} вопросов. Проверьте и сохраните.';
       });
     } catch (e) {
       setState(() => _info = 'Ошибка AI: ${e.toString()}');
@@ -566,20 +962,24 @@ class _QuizTabState extends State<_QuizTab> {
         if (_info != null)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(_info!,
-                style: TextStyle(color: t.accent, fontSize: 13)),
+            child: Text(
+              _info!,
+              style: TextStyle(color: t.accent, fontSize: 13),
+            ),
           ),
         if (_busy) const LinearProgressIndicator(minHeight: 2),
         Expanded(
           child: _questions.isEmpty
               ? const Center(
-              child:
-              Text('Добавьте вопросы вручную или сгенерируйте через AI'))
+                  child: Text(
+                    'Добавьте вопросы вручную или сгенерируйте через AI',
+                  ),
+                )
               : ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: _questions.length,
-            itemBuilder: (c, i) => _questionEditor(i),
-          ),
+                  padding: const EdgeInsets.all(16),
+                  itemCount: _questions.length,
+                  itemBuilder: (c, i) => _questionEditor(i),
+                ),
         ),
       ],
     );
@@ -600,18 +1000,23 @@ class _QuizTabState extends State<_QuizTab> {
                 CircleAvatar(
                   radius: 14,
                   backgroundColor: t.accentSoft,
-                  child: Text('${index + 1}',
-                      style: TextStyle(color: t.accent, fontSize: 13)),
+                  child: Text(
+                    '${index + 1}',
+                    style: TextStyle(color: t.accent, fontSize: 13),
+                  ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: TextField(
                     controller: TextEditingController(text: q.text)
-                      ..selection =
-                      TextSelection.collapsed(offset: q.text.length),
+                      ..selection = TextSelection.collapsed(
+                        offset: q.text.length,
+                      ),
                     onChanged: (v) => q.text = v,
                     decoration: const InputDecoration(
-                        hintText: 'Текст вопроса', isDense: true),
+                      hintText: 'Текст вопроса',
+                      isDense: true,
+                    ),
                   ),
                 ),
                 IconButton(
@@ -624,8 +1029,10 @@ class _QuizTabState extends State<_QuizTab> {
               ],
             ),
             const SizedBox(height: 8),
-            Text('Отметьте правильный вариант:',
-                style: TextStyle(fontSize: 12, color: t.muted)),
+            Text(
+              'Отметьте правильный вариант:',
+              style: TextStyle(fontSize: 12, color: t.muted),
+            ),
             for (var a = 0; a < q.answers.length; a++)
               Row(
                 children: [
@@ -639,10 +1046,13 @@ class _QuizTabState extends State<_QuizTab> {
                     child: TextField(
                       controller: TextEditingController(text: q.answers[a].text)
                         ..selection = TextSelection.collapsed(
-                            offset: q.answers[a].text.length),
+                          offset: q.answers[a].text.length,
+                        ),
                       onChanged: (v) => q.answers[a].text = v,
                       decoration: InputDecoration(
-                          hintText: 'Вариант ${a + 1}', isDense: true),
+                        hintText: 'Вариант ${a + 1}',
+                        isDense: true,
+                      ),
                     ),
                   ),
                 ],

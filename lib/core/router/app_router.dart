@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
 import '../../features/analytics/presentation/pages/admin_dashboard_page.dart';
 import '../../features/assignments/presentation/pages/admin_assignments_page.dart';
 import '../../features/auth/presentation/controllers/auth_controller.dart';
@@ -9,7 +8,7 @@ import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/certificates/presentation/pages/certificates_page.dart';
 import '../../features/courses/presentation/pages/admin_course_edit_page.dart';
 import '../../features/courses/presentation/pages/catalog_page.dart';
-import '../../features/courses/presentation/pages/course_detail_page.dart';
+import '../../features/courses/presentation/pages/course_path_page.dart';
 import '../../features/learning/presentation/pages/my_courses_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/users/presentation/pages/admin_users_page.dart';
@@ -41,14 +40,14 @@ GoRouter buildRouter(AuthController auth) {
       GoRoute(
         path: '/courses/:id',
         builder: (c, s) =>
-            CourseDetailPage(courseId: int.parse(s.pathParameters['id']!)),
+            CoursePathPage(courseId: int.parse(s.pathParameters['id']!)),
       ),
       GoRoute(path: '/admin', builder: (c, s) => const AdminDashboardPage()),
       GoRoute(
+          path: '/admin/users', builder: (c, s) => const AdminUsersPage()),
+      GoRoute(
           path: '/admin/assignments',
           builder: (c, s) => const AdminAssignmentsPage()),
-      GoRoute(
-          path: '/admin/users', builder: (c, s) => const AdminUsersPage()),
       GoRoute(
         path: '/admin/courses/new',
         builder: (c, s) => const AdminCourseEditPage(courseId: null),
