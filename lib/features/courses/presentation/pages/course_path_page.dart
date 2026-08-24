@@ -197,7 +197,9 @@ class _PathView extends StatelessWidget {
         final amp = laneW * 0.30;
 
         Offset pointAt(int i) {
-          final f = math.sin(i * 0.9);
+          // Зигзаг влево-вправо вокруг центра (как в Duolingo).
+          const pattern = [0.0, -0.72, 0.72, -0.55, 0.55, -0.72, 0.72];
+          final f = pattern[i % pattern.length];
           return Offset(centerX + amp * f, _topPad + i * _spacing);
         }
 
@@ -312,9 +314,6 @@ const _decAssets = [
   'dec_pickup',
   'dec_valve',
   'dec_pipes',
-  'dec_cactus',
-  'dec_bush',
-  'dec_dune',
 ];
 
 Widget _decorationImage(String name, double size) => Image.asset(
