@@ -1,4 +1,5 @@
 import '../../../auth/domain/entities/user.dart';
+import '../../domain/entities/import_result.dart';
 import '../../domain/repositories/user_repository.dart';
 import '../sources/user_remote_datasource.dart';
 
@@ -47,4 +48,11 @@ class UserRepositoryImpl implements UserRepository {
 
   @override
   Future<void> delete(int id) => _remote.delete(id);
+
+  @override
+  Future<UserImportResult> importUsers(
+      {required List<int> bytes, required String filename}) async {
+    final json = await _remote.import(bytes: bytes, filename: filename);
+    return UserImportResult.fromJson(json);
+  }
 }

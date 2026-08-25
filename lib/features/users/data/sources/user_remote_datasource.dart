@@ -7,9 +7,10 @@ class UserRemoteDataSource {
   UserRemoteDataSource(this._api);
 
   Future<List<UserModel>> list({String? q}) async {
-    final data = await _api.get('/api/users', query: {
-      if (q != null && q.isNotEmpty) 'q': q,
-    });
+    final data = await _api.get(
+      '/api/users',
+      query: {if (q != null && q.isNotEmpty) 'q': q},
+    );
     return (data as List)
         .map((e) => UserModel.fromJson(e as Map<String, dynamic>))
         .toList();
@@ -24,4 +25,16 @@ class UserRemoteDataSource {
       _api.patch('/api/users/$id', body: body);
 
   Future<void> delete(int id) => _api.delete('/api/users/$id');
+
+  Future<Map<String, dynamic>> import({
+    required List<int> bytes,
+    required String filename,
+  }) async {
+    final data = await _api.uploadFile(
+      '/api/users/import',
+      bytes: bytes,
+      filename: filename,
+    );
+    return (data as Map).cast<String, dynamic>();
+  }
 }

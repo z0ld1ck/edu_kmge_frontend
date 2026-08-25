@@ -204,7 +204,11 @@ class _PathView extends StatelessWidget {
         }
 
         final points = [for (var i = 0; i < nodeCount; i++) pointAt(i)];
-        final h = totalHeight < 320 ? 320.0 : totalHeight;
+        // Сцена не ниже видимой области — иначе фон обрежется снизу.
+        final minH = constraints.maxHeight.isFinite
+            ? constraints.maxHeight
+            : 320.0;
+        final h = math.max(totalHeight, minH);
 
         return SingleChildScrollView(
           child: SizedBox(

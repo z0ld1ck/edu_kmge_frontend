@@ -36,9 +36,15 @@ class _MyCoursesView extends StatelessWidget {
           ? Center(child: Text('Ошибка: ${ctrl.error}'))
           : ctrl.items.isEmpty
           ? _empty(context)
-          : ListView(
+          : SingleChildScrollView(
         padding: const EdgeInsets.all(20),
-        children: [for (final it in ctrl.items) _tile(context, it)],
+        child: Wrap(
+          spacing: 16,
+          runSpacing: 16,
+          children: [
+            for (final it in ctrl.items) _tile(context, it)
+          ],
+        ),
       ),
     );
   }
@@ -66,58 +72,78 @@ class _MyCoursesView extends StatelessWidget {
     final t = context.tokens;
     final enr = it.enrollment;
     final done = enr.status.isCompleted;
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-        onTap: () => context.go('/courses/${it.course.id}'),
-        title: Row(
-          children: [
-            Flexible(
-              child: Text(it.course.title,
-                  style:
-                  TextStyle(fontWeight: FontWeight.bold, color: t.text)),
-            ),
-            if (enr.isMandatory) ...[
-              const SizedBox(width: 8),
-              _badge(context, 'Обязательный', t.accentInk, t.accentSoft),
-            ],
-          ],
-        ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(it.course.category,
-                  style: TextStyle(color: t.muted, fontSize: 12)),
-              const SizedBox(height: 6),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: LinearProgressIndicator(
-                  value: enr.progress / 100,
-                  minHeight: 8,
-                  backgroundColor: t.ringTrack,
-                  valueColor: AlwaysStoppedAnimation(t.accent),
+    return SizedBox(
+      width: 340,
+      child: Card(
+        margin: EdgeInsets.zero,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => context.go('/courses/${it.course.id}'),
+          child: Padding(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    _badge(context, it.course.category, t.accentInk,
+                        t.accentSoft),
+                    const Spacer(),
+                    if (enr.isMandatory)
+                      _badge(context, 'Обязательный', t.amber, t.amberSoft),
+                  ],
                 ),
-              ),
-              if (enr.dueDate != null && !done) ...[
-                const SizedBox(height: 8),
-                _deadline(context, enr),
+                const SizedBox(height: 14),
+                SizedBox(
+                  height: 48,
+                  child: Text(
+                    it.course.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        height: 1.25,
+                        color: t.text),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Text(done ? 'Завершён' : 'Прогресс',
+                        style: TextStyle(
+                            color: done ? t.accent : t.muted,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600)),
+                    const Spacer(),
+                    if (done)
+                      Icon(Icons.verified, color: t.accent, size: 18)
+                    else
+                      Text('${enr.progress.toStringAsFixed(0)}%',
+                          style: TextStyle(
+                              color: t.accent,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14)),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: LinearProgressIndicator(
+                    value: enr.progress / 100,
+                    minHeight: 8,
+                    backgroundColor: t.ringTrack,
+                    valueColor: AlwaysStoppedAnimation(t.accent),
+                  ),
+                ),
+                if (enr.dueDate != null && !done) ...[
+                  const SizedBox(height: 12),
+                  _deadline(context, enr),
+                ],
               ],
-            ],
+            ),
           ),
         ),
-        trailing: done
-            ? Chip(
-          avatar: Icon(Icons.verified, color: t.accent, size: 18),
-          label: const Text('Завершён'),
-        )
-            : Text('${enr.progress.toStringAsFixed(0)}%',
-            style: TextStyle(
-                color: t.accent,
-                fontWeight: FontWeight.bold,
-                fontSize: 16)),
       ),
     );
   }

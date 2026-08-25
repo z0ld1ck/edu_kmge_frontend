@@ -102,6 +102,7 @@ class AppShell extends StatelessWidget {
         child: SafeArea(child: navList()),
       ),
       body: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (wide)
             Container(

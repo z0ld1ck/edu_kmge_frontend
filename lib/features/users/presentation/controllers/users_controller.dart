@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../../../auth/domain/entities/user.dart';
+import '../../domain/entities/import_result.dart';
 import '../../domain/repositories/user_repository.dart';
 
 class UsersController extends ChangeNotifier {
@@ -72,5 +73,12 @@ class UsersController extends ChangeNotifier {
   Future<void> delete(int id) async {
     await _repo.delete(id);
     await load();
+  }
+
+  Future<UserImportResult> importUsers(
+      {required List<int> bytes, required String filename}) async {
+    final result = await _repo.importUsers(bytes: bytes, filename: filename);
+    await load();
+    return result;
   }
 }
