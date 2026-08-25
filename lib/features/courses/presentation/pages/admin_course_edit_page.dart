@@ -266,11 +266,12 @@ class _LessonsTab extends StatelessWidget {
 
   Future<void> _edit(BuildContext context, {Lesson? lesson}) async {
     final ctrl = context.read<CourseEditController>();
-    await showDialog(
-      context: context,
-      builder: (_) => ChangeNotifierProvider.value(
-        value: ctrl,
-        child: _LessonFormDialog(lesson: lesson),
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ChangeNotifierProvider.value(
+          value: ctrl,
+          child: _LessonFormDialog(lesson: lesson),
+        ),
       ),
     );
   }
@@ -376,7 +377,6 @@ class _LessonFormDialogState extends State<_LessonFormDialog> {
 
   int? get _lessonId => widget.lesson?.id;
 
-
   void _wrap(String token) {
     final text = _content.text;
     final sel = _content.selection;
@@ -414,6 +414,7 @@ class _LessonFormDialogState extends State<_LessonFormDialog> {
     );
     setState(() {});
   }
+
   @override
   void dispose() {
     _title.dispose();
@@ -577,100 +578,109 @@ class _LessonFormDialogState extends State<_LessonFormDialog> {
   Widget build(BuildContext context) {
     final t = context.tokens;
     final isNew = widget.lesson == null;
-    return AlertDialog(
-      title: Text(isNew ? 'Новый урок' : 'Редактировать урок'),
-      content: SizedBox(
-        width: 520,
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: _title,
-                decoration: const InputDecoration(labelText: 'Заголовок'),
-              ),
-              const SizedBox(height: 12),
-              _contentEditor(context),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _video,
-                decoration: const InputDecoration(
-                  labelText: 'Ссылка на видео (необязательно)',
+    return Scaffold(
+      backgroundColor: t.bg,
+      appBar: AppBar(
+        title: Text(isNew ? 'Новый урок' : 'Редактировать урок'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: FilledButton.icon(
+              onPressed: _busy ? null : _save,
+              icon: const Icon(Icons.save, size: 18),
+              label: const Text('Сохранить'),
+            ),
+          ),
+        ],
+      ),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 760),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: _title,
+                  decoration: const InputDecoration(labelText: 'Заголовок'),
                 ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Icon(Icons.attach_file, size: 18, color: t.muted),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Материалы',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: t.text,
-                    ),
+                const SizedBox(height: 12),
+                _contentEditor(context),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _video,
+                  decoration: const InputDecoration(
+                    labelText: 'Ссылка на видео (необязательно)',
                   ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              if (isNew)
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: t.surface2,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    'Сначала сохраните урок — после этого можно будет '
-                    'загрузить PDF или добавить ссылки.',
-                    style: TextStyle(color: t.muted, fontSize: 13),
-                  ),
-                )
-              else ...[
+                ),
+                const SizedBox(height: 20),
                 Row(
                   children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: _busy ? null : _pickAndUpload,
-                        icon: const Icon(Icons.upload_file, size: 18),
-                        label: const Text('Загрузить PDF'),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: _busy ? null : _addLinkDialog,
-                        icon: const Icon(Icons.link, size: 18),
-                        label: const Text('Добавить ссылку'),
+                    Icon(Icons.attach_file, size: 18, color: t.muted),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Материалы',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: t.text,
                       ),
                     ),
                   ],
                 ),
-                if (_busy) ...[
+                const SizedBox(height: 8),
+                if (isNew)
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: t.surface2,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      'Сначала сохраните урок — после этого можно будет '
+                      'загрузить PDF или добавить ссылки.',
+                      style: TextStyle(color: t.muted, fontSize: 13),
+                    ),
+                  )
+                else ...[
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _busy ? null : _pickAndUpload,
+                          icon: const Icon(Icons.upload_file, size: 18),
+                          label: const Text('Загрузить PDF'),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _busy ? null : _addLinkDialog,
+                          icon: const Icon(Icons.link, size: 18),
+                          label: const Text('Добавить ссылку'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (_busy) ...[
+                    const SizedBox(height: 10),
+                    const LinearProgressIndicator(minHeight: 2),
+                  ],
                   const SizedBox(height: 10),
-                  const LinearProgressIndicator(minHeight: 2),
+                  if (_materials.isEmpty)
+                    Text(
+                      'Материалов пока нет',
+                      style: TextStyle(color: t.faint),
+                    )
+                  else
+                    for (final m in _materials) _materialTile(context, m),
                 ],
-                const SizedBox(height: 10),
-                if (_materials.isEmpty)
-                  Text('Материалов пока нет', style: TextStyle(color: t.faint))
-                else
-                  for (final m in _materials) _materialTile(context, m),
               ],
-            ],
+            ),
           ),
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Отмена'),
-        ),
-        FilledButton(
-          onPressed: _busy ? null : _save,
-          child: const Text('Сохранить'),
-        ),
-      ],
     );
   }
 
@@ -687,15 +697,18 @@ class _LessonFormDialogState extends State<_LessonFormDialog> {
       children: [
         Row(
           children: [
-            Text('Содержание урока (Markdown)',
-                style: TextStyle(color: t.muted, fontSize: 13)),
+            Text(
+              'Содержание урока (Markdown)',
+              style: TextStyle(color: t.muted, fontSize: 13),
+            ),
             const Spacer(),
             SizedBox(
               height: 32,
               child: SegmentedButton<bool>(
                 style: const ButtonStyle(
-                    visualDensity: VisualDensity.compact,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                  visualDensity: VisualDensity.compact,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
                 segments: const [
                   ButtonSegment(value: false, label: Text('Редактор')),
                   ButtonSegment(value: true, label: Text('Предпросмотр')),
@@ -720,12 +733,21 @@ class _LessonFormDialogState extends State<_LessonFormDialog> {
                     btn(Icons.title, 'Заголовок', () => _prefixLine('## ')),
                     btn(Icons.format_bold, 'Жирный', () => _wrap('**')),
                     btn(Icons.format_italic, 'Курсив', () => _wrap('_')),
-                    btn(Icons.format_list_bulleted, 'Список',
-                            () => _prefixLine('- ')),
-                    btn(Icons.link, 'Ссылка',
-                            () => _insert('[текст](https://)')),
-                    btn(Icons.image_outlined, 'Картинка',
-                            () => _insert('![подпись](https://ссылка.png)')),
+                    btn(
+                      Icons.format_list_bulleted,
+                      'Список',
+                      () => _prefixLine('- '),
+                    ),
+                    btn(
+                      Icons.link,
+                      'Ссылка',
+                      () => _insert('[текст](https://)'),
+                    ),
+                    btn(
+                      Icons.image_outlined,
+                      'Картинка',
+                      () => _insert('![подпись](https://ссылка.png)'),
+                    ),
                   ],
                 ),
               if (!_preview) Divider(height: 1, color: t.border),
@@ -733,25 +755,25 @@ class _LessonFormDialogState extends State<_LessonFormDialog> {
                 padding: const EdgeInsets.all(12),
                 child: _preview
                     ? ConstrainedBox(
-                  constraints: const BoxConstraints(minHeight: 120),
-                  child: Align(
-                    alignment: Alignment.topLeft,
-                    child: _content.text.trim().isEmpty
-                        ? Text('Пусто', style: TextStyle(color: t.faint))
-                        : MarkdownView(_content.text, selectable: false),
-                  ),
-                )
+                        constraints: const BoxConstraints(minHeight: 120),
+                        child: Align(
+                          alignment: Alignment.topLeft,
+                          child: _content.text.trim().isEmpty
+                              ? Text('Пусто', style: TextStyle(color: t.faint))
+                              : MarkdownView(_content.text, selectable: false),
+                        ),
+                      )
                     : TextField(
-                  controller: _content,
-                  maxLines: 10,
-                  minLines: 6,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    isDense: true,
-                    hintText:
-                    '## Заголовок, **жирный**, - списки, ![](url)',
-                  ),
-                ),
+                        controller: _content,
+                        maxLines: 10,
+                        minLines: 6,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          isDense: true,
+                          hintText:
+                              '## Заголовок, **жирный**, - списки, ![](url)',
+                        ),
+                      ),
               ),
             ],
           ),
