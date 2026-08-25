@@ -16,12 +16,12 @@ import 'lesson_page.dart';
 import 'quiz_page.dart';
 
 // Цвета «пустынной» сцены — единые для свет/тьмы (это оформленная карта).
-const _sand = Color(0xFFEFDDB8);
-const _sandDark = Color(0xFFE4CE9F);
+const _sand = Color(0xFFF1E6CB);
+const _sandDark = Color(0xFFF1E6CB);
 const _trail = Color(0xFFC7A76B);
 const _sandInk = Color(0xFF6B5636);
 
-const double _rigSize = 104;
+const double _rigSize = 140;
 const double _nodeSize = 128;
 const double _spacing = 168;
 const double _topPad = 56;
@@ -213,20 +213,7 @@ class _PathView extends StatelessWidget {
             child: Stack(
               children: [
                 Positioned.fill(
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [_sand, _sandDark],
-                      ),
-                      image: DecorationImage(
-                        image: AssetImage('assets/map/sand.png'),
-                        repeat: ImageRepeat.repeat,
-                        onError: _ignoreImgError,
-                      ),
-                    ),
-                  ),
+                  child: CustomPaint(painter: _DesertPainter(seed: courseId)),
                 ),
                 ..._decorationPlacements(width, centerX, laneW, points),
                 Positioned.fill(
@@ -287,7 +274,8 @@ class _PathView extends StatelessWidget {
       height: _nodeSize,
       child: _RigNode(
         state: state,
-        assetKey: isQuiz ? 'quiz' : '${i + 1}',
+        assetKey: isQuiz ? '6' : '${i + 1}',
+        // ← было 'quiz'
         isQuiz: isQuiz,
         title: isQuiz ? 'Итоговый тест' : lessons[i].title,
         onTap: onTap,
@@ -301,8 +289,6 @@ class _PathView extends StatelessWidget {
     );
   }
 }
-
-void _ignoreImgError(Object e, StackTrace? s) {}
 
 const _decAssets = [
   'dec_pumpjack',
@@ -334,7 +320,7 @@ List<Widget> _decorationPlacements(
   for (var i = 0; i < points.length; i++) {
     final p = points[i];
     final side = p.dx < centerX ? 1.0 : -1.0;
-    const size = 92.0;
+    const size = 120.0;
     var x = centerX + side * (laneW * 0.5 + 44) - size / 2;
     x = x.clamp(12.0, width - size - 12);
     out.add(
@@ -350,7 +336,7 @@ List<Widget> _decorationPlacements(
 
 enum _NodeState { done, current, locked }
 
-class _RigNode extends StatelessWidget {
+class _RigNode extends StatefulWidget {
   final _NodeState state;
   final String assetKey;
   final String title;
@@ -364,6 +350,24 @@ class _RigNode extends StatelessWidget {
     required this.isQuiz,
     this.onTap,
   });
+
+  @override
+  State<_RigNode> createState() => _RigNodeState();
+}
+
+class _RigNodeState extends State<_RigNode> {
+  bool _hover = false;
+  bool _pressed = false;
+
+  _NodeState get state => widget.state;
+
+  String get assetKey => widget.assetKey;
+
+  String get title => widget.title;
+
+  bool get isQuiz => widget.isQuiz;
+
+  VoidCallback? get onTap => widget.onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -394,61 +398,84 @@ class _RigNode extends StatelessWidget {
       rig = Opacity(opacity: 0.5, child: rig);
     }
 
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            width: _nodeSize,
-            height: _nodeSize - 26,
-            child: Stack(
-              clipBehavior: Clip.none,
-              alignment: Alignment.center,
-              children: [
-                Positioned(
-                  bottom: 6,
-                  child: Container(
-                    width: 74,
-                    height: 16,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.10),
-                      borderRadius: BorderRadius.circular(40),
+    final enabled = state != _NodeState.locked;
+    final double dy = enabled ? (_pressed ? 4.0 : (_hover ? -8.0 : 0.0)) : 0.0;
+    final double scale = enabled
+        ? (_pressed ? 0.94 : (_hover ? 1.08 : 1.0))
+        : 1.0;
+
+    return MouseRegion(
+      cursor: enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
+      onEnter: (_) => setState(() => _hover = true),
+      onExit: (_) => setState(() {
+        _hover = false;
+        _pressed = false;
+      }),
+      child: GestureDetector(
+        onTap: onTap,
+        onTapDown: enabled ? (_) => setState(() => _pressed = true) : null,
+        onTapUp: enabled ? (_) => setState(() => _pressed = false) : null,
+        onTapCancel: enabled ? () => setState(() => _pressed = false) : null,
+        behavior: HitTestBehavior.opaque,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 130),
+          curve: Curves.easeOut,
+          transform: Matrix4.translationValues(0, dy, 0)..scale(scale),
+          transformAlignment: Alignment.center,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: _nodeSize,
+                height: _nodeSize - 26,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.center,
+                  children: [
+                    Positioned(
+                      bottom: 6,
+                      child: Container(
+                        width: 74,
+                        height: 16,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.10),
+                          borderRadius: BorderRadius.circular(40),
+                        ),
+                      ),
                     ),
+                    if (state == _NodeState.current)
+                      Container(
+                        width: 108,
+                        height: 108,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: const Color(0xFFF6C560).withOpacity(0.45),
+                        ),
+                      ),
+                    Align(alignment: Alignment.center, child: rig),
+                    Positioned(right: 20, bottom: 8, child: _badge(context)),
+                  ],
+                ),
+              ),
+              SizedBox(
+                width: _nodeSize,
+                child: Text(
+                  isQuiz ? 'Итоговый тест' : title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                    color: state == _NodeState.locked
+                        ? _sandInk.withOpacity(0.5)
+                        : _sandInk,
                   ),
                 ),
-                if (state == _NodeState.current)
-                  Container(
-                    width: 108,
-                    height: 108,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: const Color(0xFFF6C560).withOpacity(0.45),
-                    ),
-                  ),
-                Align(alignment: Alignment.center, child: rig),
-                Positioned(right: 20, bottom: 8, child: _badge(context)),
-              ],
-            ),
-          ),
-          SizedBox(
-            width: _nodeSize,
-            child: Text(
-              isQuiz ? 'Итоговый тест' : title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 11.5,
-                fontWeight: FontWeight.w600,
-                color: state == _NodeState.locked
-                    ? _sandInk.withOpacity(0.5)
-                    : _sandInk,
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -588,4 +615,90 @@ class _RigPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _RigPainter old) =>
       old.body != body || old.isQuiz != isQuiz;
+}
+
+class _DesertPainter extends CustomPainter {
+  final int seed;
+
+  _DesertPainter({required this.seed});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    final bg = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [_sand, _sandDark],
+      ).createShader(rect);
+    canvas.drawRect(rect, bg);
+
+    final rnd = math.Random(seed * 7 + 13);
+    final count = ((size.width * size.height) / 13000).clamp(16, 500).toInt();
+    for (var i = 0; i < count; i++) {
+      final o = Offset(
+        rnd.nextDouble() * size.width,
+        20 + rnd.nextDouble() * (size.height - 40),
+      );
+      final r = rnd.nextDouble();
+      if (r < 0.62) {
+        _dune(canvas, o, 12 + rnd.nextDouble() * 26);
+      } else if (r < 0.84) {
+        _bush(canvas, o, 7 + rnd.nextDouble() * 6);
+      } else {
+        _cactus(canvas, o, 11 + rnd.nextDouble() * 10);
+      }
+    }
+  }
+
+  void _dune(Canvas c, Offset o, double w) {
+    final base = Paint()..color = const Color(0xFFE3CB99);
+    final hi = Paint()..color = const Color(0xFFF4E7CB);
+    c.drawOval(Rect.fromCenter(center: o, width: w, height: w * 0.5), base);
+    c.drawOval(
+      Rect.fromCenter(
+        center: o.translate(0, -w * 0.06),
+        width: w * 0.7,
+        height: w * 0.3,
+      ),
+      hi,
+    );
+  }
+
+  void _bush(Canvas c, Offset o, double r) {
+    final dark = Paint()..color = const Color(0xFF5FA23C);
+    final light = Paint()..color = const Color(0xFF7CC353);
+    c.drawCircle(o.translate(-r * 0.5, 0), r * 0.8, dark);
+    c.drawCircle(o.translate(r * 0.5, 0), r * 0.8, dark);
+    c.drawCircle(o.translate(0, -r * 0.4), r, light);
+  }
+
+  void _cactus(Canvas c, Offset o, double h) {
+    final p = Paint()
+      ..color = const Color(0xFF57993A)
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = h * 0.32
+      ..style = PaintingStyle.stroke;
+    c.drawLine(o, o.translate(0, -h), p);
+    final armY = -h * 0.55;
+    c.drawLine(o.translate(0, armY), o.translate(h * 0.4, armY), p);
+    c.drawLine(
+      o.translate(h * 0.4, armY),
+      o.translate(h * 0.4, armY - h * 0.35),
+      p,
+    );
+    c.drawLine(
+      o.translate(0, armY + h * 0.15),
+      o.translate(-h * 0.35, armY + h * 0.15),
+      p,
+    );
+    c.drawLine(
+      o.translate(-h * 0.35, armY + h * 0.15),
+      o.translate(-h * 0.35, armY - h * 0.2),
+      p,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _DesertPainter old) => old.seed != seed;
 }
