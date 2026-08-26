@@ -95,6 +95,12 @@ class _PathView extends StatelessWidget {
     return AppShell(
       title: course?.title ?? 'Курс',
       current: '/catalog',
+      leading: IconButton(
+        tooltip: 'Назад',
+        icon: Icon(Icons.arrow_back, color: context.tokens.text),
+        onPressed: () =>
+        context.canPop() ? context.pop() : context.go('/catalog'),
+      ),
       actions: [
         if (ctrl.aiEnabled && course != null)
           IconButton(

@@ -56,6 +56,11 @@ class CourseRemoteDataSource {
   Future<void> updateLesson(int lessonId, Map<String, dynamic> body) =>
       _api.patch('/api/courses/lessons/$lessonId', body: body);
 
+  Future<void> reorderLessons(int courseId, List<int> lessonIds) => _api.post(
+    '/api/courses/$courseId/lessons/reorder',
+    body: {'lesson_ids': lessonIds},
+  );
+
   Future<void> deleteLesson(int lessonId) =>
       _api.delete('/api/courses/lessons/$lessonId');
 

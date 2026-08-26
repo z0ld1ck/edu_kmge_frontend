@@ -152,6 +152,26 @@ class CourseEditController extends ChangeNotifier {
     await load(courseId!);
   }
 
+  /// Перетаскивание урока: oldIndex → newIndex (индексы ReorderableListView).
+  Future<void> reorderLessons(int oldIndex, int newIndex) async {
+    final current = course;
+    if (current == null) return;
+    final list = List<Lesson>.of(current.lessons);
+    if (newIndex > oldIndex) newIndex -= 1;
+    if (oldIndex == newIndex) return;
+    final item = list.removeAt(oldIndex);
+    list.insert(newIndex, item);
+    // Оптимистично показываем новый порядок сразу.
+    course = current.copyWith(lessons: list);
+    notifyListeners();
+    try {
+      await _repo.reorderLessons(courseId!, [for (final l in list) l.id]);
+    } catch (e) {
+      error = e.toString();
+      await load(courseId!); // откатываемся к серверному порядку
+    }
+  }
+
   Future<Quiz?> loadQuiz() async {
     try {
       return await _repo.quiz(courseId!);

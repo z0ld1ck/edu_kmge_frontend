@@ -49,6 +49,8 @@ abstract class CourseRepository {
 
   Future<void> deleteLesson(int lessonId);
 
+  Future<void> reorderLessons(int courseId, List<int> lessonIds);
+
   Future<Quiz> quiz(int courseId);
 
   Future<Lesson> addMaterialLink(

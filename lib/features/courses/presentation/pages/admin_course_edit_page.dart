@@ -303,48 +303,60 @@ class _LessonsTab extends StatelessWidget {
         Expanded(
           child: lessons.isEmpty
               ? const Center(child: Text('Уроков пока нет'))
-              : ListView(
+              : ReorderableListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  children: [
-                    for (var i = 0; i < lessons.length; i++)
-                      Card(
-                        margin: const EdgeInsets.only(bottom: 10),
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: t.accentSoft,
-                            child: Text(
-                              '${i + 1}',
-                              style: TextStyle(color: t.accent),
-                            ),
-                          ),
-                          title: Text(lessons[i].title),
-                          subtitle: Text(
-                            lessons[i].content,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit_outlined, size: 20),
-                                onPressed: () =>
-                                    _edit(context, lesson: lessons[i]),
-                              ),
-                              IconButton(
-                                icon: Icon(
-                                  Icons.delete_outline,
-                                  size: 20,
-                                  color: t.danger,
-                                ),
-                                onPressed: () =>
-                                    ctrl.deleteLesson(lessons[i].id),
-                              ),
-                            ],
+                  buildDefaultDragHandles: false,
+                  itemCount: lessons.length,
+                  onReorder: ctrl.reorderLessons,
+                  itemBuilder: (context, i) {
+                    final lesson = lessons[i];
+                    return Card(
+                      key: ValueKey(lesson.id),
+                      margin: const EdgeInsets.only(bottom: 10),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: t.accentSoft,
+                          child: Text(
+                            '${i + 1}',
+                            style: TextStyle(color: t.accent),
                           ),
                         ),
+                        title: Text(lesson.title),
+                        subtitle: Text(
+                          lesson.content,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit_outlined, size: 20),
+                              onPressed: () => _edit(context, lesson: lesson),
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                Icons.delete_outline,
+                                size: 20,
+                                color: t.danger,
+                              ),
+                              onPressed: () => ctrl.deleteLesson(lesson.id),
+                            ),
+                            ReorderableDragStartListener(
+                              index: i,
+                              child: Padding(
+                                padding: const EdgeInsets.only(left: 4),
+                                child: Icon(
+                                  Icons.drag_indicator,
+                                  color: t.faint,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                  ],
+                    );
+                  },
                 ),
         ),
       ],

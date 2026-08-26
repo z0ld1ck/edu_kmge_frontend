@@ -112,16 +112,16 @@ class _MyCoursesView extends StatelessWidget {
                   children: [
                     Text(done ? 'Завершён' : 'Прогресс',
                         style: TextStyle(
-                            color: done ? t.accent : t.muted,
+                            color: done ? t.success : t.muted,
                             fontSize: 12,
                             fontWeight: FontWeight.w600)),
                     const Spacer(),
                     if (done)
-                      Icon(Icons.verified, color: t.accent, size: 18)
+                      Icon(Icons.verified, color: t.success, size: 18)
                     else
                       Text('${enr.progress.toStringAsFixed(0)}%',
                           style: TextStyle(
-                              color: t.accent,
+                              color: t.success,
                               fontWeight: FontWeight.bold,
                               fontSize: 14)),
                   ],
@@ -133,7 +133,7 @@ class _MyCoursesView extends StatelessWidget {
                     value: enr.progress / 100,
                     minHeight: 8,
                     backgroundColor: t.ringTrack,
-                    valueColor: AlwaysStoppedAnimation(t.accent),
+                    valueColor: AlwaysStoppedAnimation(t.success),
                   ),
                 ),
                 if (enr.dueDate != null && !done) ...[

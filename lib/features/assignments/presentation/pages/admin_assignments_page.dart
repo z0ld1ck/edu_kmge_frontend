@@ -211,7 +211,7 @@ class _AssignmentsView extends StatelessWidget {
                       value: a.progress / 100,
                       minHeight: 6,
                       backgroundColor: t.ringTrack,
-                      valueColor: AlwaysStoppedAnimation(t.accent),
+                      valueColor: AlwaysStoppedAnimation(t.success),
                     ),
                   ),
                 ],

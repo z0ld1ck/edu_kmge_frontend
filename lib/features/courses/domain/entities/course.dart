@@ -40,4 +40,17 @@ class CourseDetail extends Course {
     required super.hasQuiz,
     required this.lessons,
   });
+
+  CourseDetail copyWith({List<Lesson>? lessons}) => CourseDetail(
+    id: id,
+    title: title,
+    description: description,
+    category: category,
+    isPublished: isPublished,
+    passScore: passScore,
+    certificateEnabled: certificateEnabled,
+    lessonsCount: lessonsCount,
+    hasQuiz: hasQuiz,
+    lessons: lessons ?? this.lessons,
+  );
 }

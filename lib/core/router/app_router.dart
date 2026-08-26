@@ -13,6 +13,12 @@ import '../../features/learning/presentation/pages/my_courses_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/users/presentation/pages/admin_users_page.dart';
 
+/// Маршрут без анимации перехода (страницы не «накладываются» при смене).
+GoRoute _route(String path, Widget child) => GoRoute(
+  path: path,
+  pageBuilder: (c, s) => NoTransitionPage(child: child),
+);
+
 GoRouter buildRouter(AuthController auth) {
   return GoRouter(
     initialLocation: '/catalog',
@@ -29,37 +35,36 @@ GoRouter buildRouter(AuthController auth) {
       return null;
     },
     routes: [
-      GoRoute(path: '/login', builder: (c, s) => const LoginPage()),
-      GoRoute(path: '/register', builder: (c, s) => const RegisterPage()),
-      GoRoute(path: '/catalog', builder: (c, s) => const CatalogPage()),
-      GoRoute(path: '/my', builder: (c, s) => const MyCoursesPage()),
-      GoRoute(
-          path: '/certificates',
-          builder: (c, s) => const CertificatesPage()),
-      GoRoute(path: '/profile', builder: (c, s) => const ProfilePage()),
+      _route('/login', const LoginPage()),
+      _route('/register', const RegisterPage()),
+      _route('/catalog', const CatalogPage()),
+      _route('/my', const MyCoursesPage()),
+      _route('/certificates', const CertificatesPage()),
+      _route('/profile', const ProfilePage()),
       GoRoute(
         path: '/courses/:id',
-        builder: (c, s) =>
-            CoursePathPage(courseId: int.parse(s.pathParameters['id']!)),
+        pageBuilder: (c, s) => NoTransitionPage(
+          child: CoursePathPage(courseId: int.parse(s.pathParameters['id']!)),
+        ),
       ),
-      GoRoute(path: '/admin', builder: (c, s) => const AdminDashboardPage()),
-      GoRoute(
-          path: '/admin/users', builder: (c, s) => const AdminUsersPage()),
-      GoRoute(
-          path: '/admin/assignments',
-          builder: (c, s) => const AdminAssignmentsPage()),
+      _route('/admin', const AdminDashboardPage()),
+      _route('/admin/users', const AdminUsersPage()),
+      _route('/admin/assignments', const AdminAssignmentsPage()),
       GoRoute(
         path: '/admin/courses/new',
-        builder: (c, s) => const AdminCourseEditPage(courseId: null),
+        pageBuilder: (c, s) =>
+            const NoTransitionPage(child: AdminCourseEditPage(courseId: null)),
       ),
       GoRoute(
         path: '/admin/courses/:id',
-        builder: (c, s) => AdminCourseEditPage(
-            courseId: int.parse(s.pathParameters['id']!)),
+        pageBuilder: (c, s) => NoTransitionPage(
+          child: AdminCourseEditPage(
+            courseId: int.parse(s.pathParameters['id']!),
+          ),
+        ),
       ),
     ],
-    errorBuilder: (c, s) => Scaffold(
-      body: Center(child: Text('Страница не найдена: ${s.uri}')),
-    ),
+    errorBuilder: (c, s) =>
+        Scaffold(body: Center(child: Text('Страница не найдена: ${s.uri}'))),
   );
 }

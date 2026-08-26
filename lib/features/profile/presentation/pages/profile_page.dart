@@ -136,8 +136,8 @@ class _ProfileViewState extends State<_ProfileView> {
                   radius: 32,
                   backgroundColor: t.accent,
                   child: Text(initials.toUpperCase(),
-                      style: const TextStyle(
-                          color: Colors.white,
+                      style: TextStyle(
+                          color: t.surface,
                           fontSize: 22,
                           fontWeight: FontWeight.bold)),
                 ),
@@ -186,7 +186,7 @@ class _ProfileViewState extends State<_ProfileView> {
                 value: ctrl.progressToNext,
                 minHeight: 9,
                 backgroundColor: t.ringTrack,
-                valueColor: AlwaysStoppedAnimation(t.accent),
+                valueColor: AlwaysStoppedAnimation(t.success),
               ),
             ),
             const SizedBox(height: 14),
@@ -234,7 +234,7 @@ class _ProfileViewState extends State<_ProfileView> {
         ? t.accentSoft
         : t.surface2;
     final fg = isCurrent
-        ? Colors.white
+        ? t.surface
         : passed
         ? t.accentInk
         : t.faint;
@@ -487,7 +487,7 @@ class _Ring extends StatelessWidget {
               value: value,
               strokeWidth: 6,
               backgroundColor: t.ringTrack,
-              valueColor: AlwaysStoppedAnimation(t.accent),
+              valueColor: AlwaysStoppedAnimation(t.success),
             ),
           ),
           Column(
@@ -580,11 +580,11 @@ class _PasswordDialogState extends State<_PasswordDialog> {
         FilledButton(
           onPressed: _busy ? null : _submit,
           child: _busy
-              ? const SizedBox(
+              ? SizedBox(
               width: 18,
               height: 18,
               child: CircularProgressIndicator(
-                  strokeWidth: 2, color: Colors.white))
+                  strokeWidth: 2, color: t.surface))
               : const Text('Сохранить'),
         ),
       ],

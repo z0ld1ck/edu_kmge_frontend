@@ -92,6 +92,10 @@ class CourseRepositoryImpl implements CourseRepository {
   @override
   Future<void> deleteLesson(int lessonId) => _remote.deleteLesson(lessonId);
 
+  Future<void> reorderLessons(int courseId, List<int> lessonIds) =>
+      _remote.reorderLessons(courseId, lessonIds);
+
+  @override
   Future<Lesson> addMaterialLink(
     int lessonId, {
     required String title,

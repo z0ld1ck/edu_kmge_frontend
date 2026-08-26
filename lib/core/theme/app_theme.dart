@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 /// Семантические токены дизайна (свет/тёмная), доступны через `context.tokens`.
-///
-/// Экраны берут цвета отсюда, а не из хардкода — тогда тёмная тема работает
-/// автоматически. Соответствует дизайн-концепту KMGE Edu.
 @immutable
 class AppTokens extends ThemeExtension<AppTokens> {
   final Color bg;
@@ -18,6 +16,7 @@ class AppTokens extends ThemeExtension<AppTokens> {
   final Color accent;
   final Color accentInk;
   final Color accentSoft;
+  final Color success; // прогресс всегда зелёный
   final Color amber;
   final Color amberSoft;
   final Color danger;
@@ -25,6 +24,8 @@ class AppTokens extends ThemeExtension<AppTokens> {
   final Color info;
   final Color infoSoft;
   final Color ringTrack;
+  final Color navSelected;
+  final Color navSelectedInk;
 
   const AppTokens({
     required this.bg,
@@ -32,6 +33,7 @@ class AppTokens extends ThemeExtension<AppTokens> {
     required this.surface2,
     required this.surface3,
     required this.border,
+    required this.success,
     required this.borderStrong,
     required this.text,
     required this.muted,
@@ -46,50 +48,58 @@ class AppTokens extends ThemeExtension<AppTokens> {
     required this.info,
     required this.infoSoft,
     required this.ringTrack,
+    required this.navSelected,
+    required this.navSelectedInk,
   });
 
   static const light = AppTokens(
-    bg: Color(0xFFF4F7F5),
+    bg: Color(0xFFF6F1E9),
     surface: Color(0xFFFFFFFF),
-    surface2: Color(0xFFEDF3F0),
-    surface3: Color(0xFFF8FBF9),
-    border: Color(0xFFE2EAE6),
-    borderStrong: Color(0xFFD2DED8),
-    text: Color(0xFF15211D),
-    muted: Color(0xFF61726B),
-    faint: Color(0xFF8A9993),
-    accent: Color(0xFF0E9C77),
-    accentInk: Color(0xFF0A6B52),
-    accentSoft: Color(0xFFE2F3EC),
-    amber: Color(0xFFC9871F),
-    amberSoft: Color(0xFFFAEED6),
+    surface2: Color(0xFFF1EBE0),
+    surface3: Color(0xFFFAF7F1),
+    border: Color(0xFFEBE3D6),
+    borderStrong: Color(0xFFDCD1BF),
+    text: Color(0xFF111114),
+    muted: Color(0xFF5B554E),
+    faint: Color(0xFF938A7C),
+    accent: Color(0xFF16130F),
+    accentInk: Color(0xFF16130F),
+    accentSoft: Color(0xFFEDE7DC),
+    success: Color(0xFF2E9E5B),
+    amber: Color(0xFFB5811C),
+    amberSoft: Color(0xFFF6ECD3),
     danger: Color(0xFFD8452F),
-    dangerSoft: Color(0xFFFBE4DF),
+    dangerSoft: Color(0xFFFBE1DB),
     info: Color(0xFF2F72BE),
-    infoSoft: Color(0xFFE4EEF9),
-    ringTrack: Color(0xFFE5EDE9),
+    infoSoft: Color(0xFFE4EDF8),
+    ringTrack: Color(0xFFEDE5D8),
+    navSelected: Color(0xFF241F1B),
+    navSelectedInk: Color(0xFFFFFFFF),
   );
 
   static const dark = AppTokens(
-    bg: Color(0xFF0D1411),
-    surface: Color(0xFF151F1B),
-    surface2: Color(0xFF1C2823),
-    surface3: Color(0xFF111A16),
-    border: Color(0xFF26332E),
-    borderStrong: Color(0xFF33443D),
-    text: Color(0xFFE9F1ED),
-    muted: Color(0xFF9CB0A8),
-    faint: Color(0xFF6F827B),
-    accent: Color(0xFF2BBB90),
-    accentInk: Color(0xFF7EE3C6),
-    accentSoft: Color(0xFF172A24),
+    bg: Color(0xFF191512),
+    surface: Color(0xFF221D19),
+    surface2: Color(0xFF2B251F),
+    surface3: Color(0xFF15110E),
+    border: Color(0xFF322B24),
+    borderStrong: Color(0xFF463C32),
+    text: Color(0xFFF0E9E0),
+    muted: Color(0xFFB1A596),
+    faint: Color(0xFF7F7568),
+    accent: Color(0xFFF0E9E0),
+    accentInk: Color(0xFFF0E9E0),
+    accentSoft: Color(0xFF2B251F),
+    success: Color(0xFF4CC479),
     amber: Color(0xFFE0A542),
     amberSoft: Color(0xFF322813),
     danger: Color(0xFFEC6A54),
     dangerSoft: Color(0xFF33201C),
     info: Color(0xFF5B9BE0),
     infoSoft: Color(0xFF1B2A3B),
-    ringTrack: Color(0xFF26332E),
+    ringTrack: Color(0xFF322B24),
+    navSelected: Color(0xFFF0E9E0),
+    navSelectedInk: Color(0xFF191512),
   );
 
   @override
@@ -111,8 +121,11 @@ class AppTokens extends ThemeExtension<AppTokens> {
     Color? danger,
     Color? dangerSoft,
     Color? info,
+    Color? success,
     Color? infoSoft,
     Color? ringTrack,
+    Color? navSelected,
+    Color? navSelectedInk,
   }) {
     return AppTokens(
       bg: bg ?? this.bg,
@@ -131,9 +144,12 @@ class AppTokens extends ThemeExtension<AppTokens> {
       amberSoft: amberSoft ?? this.amberSoft,
       danger: danger ?? this.danger,
       dangerSoft: dangerSoft ?? this.dangerSoft,
+      success: success ?? this.success,
       info: info ?? this.info,
       infoSoft: infoSoft ?? this.infoSoft,
       ringTrack: ringTrack ?? this.ringTrack,
+      navSelected: navSelected ?? this.navSelected,
+      navSelectedInk: navSelectedInk ?? this.navSelectedInk,
     );
   }
 
@@ -156,10 +172,13 @@ class AppTokens extends ThemeExtension<AppTokens> {
       amber: Color.lerp(amber, other.amber, t)!,
       amberSoft: Color.lerp(amberSoft, other.amberSoft, t)!,
       danger: Color.lerp(danger, other.danger, t)!,
+      success: Color.lerp(success, other.success, t)!,
       dangerSoft: Color.lerp(dangerSoft, other.dangerSoft, t)!,
       info: Color.lerp(info, other.info, t)!,
       infoSoft: Color.lerp(infoSoft, other.infoSoft, t)!,
       ringTrack: Color.lerp(ringTrack, other.ringTrack, t)!,
+      navSelected: Color.lerp(navSelected, other.navSelected, t)!,
+      navSelectedInk: Color.lerp(navSelectedInk, other.navSelectedInk, t)!,
     );
   }
 }
@@ -169,13 +188,10 @@ extension AppTokensX on BuildContext {
       Theme.of(this).extension<AppTokens>() ?? AppTokens.light;
 }
 
-/// Обратная совместимость: старый код ссылается на AppColors.brand и т.д.
-/// Это статические (не адаптивные) значения — новые экраны должны использовать
-/// `context.tokens`. Оставлено, чтобы не ломать сборку при постепенной миграции.
 class AppColors {
-  static const brand = Color(0xFF0E9C77);
-  static const brandLight = Color(0xFF2BBB90);
-  static const background = Color(0xFFF4F7F5);
+  static const brand = Color(0xFFEC5B4C);
+  static const brandLight = Color(0xFFF26D5B);
+  static const background = Color(0xFFF6F1E9);
 }
 
 ThemeData buildLightTheme() => _buildTheme(AppTokens.light, Brightness.light);
@@ -187,9 +203,9 @@ ThemeData _buildTheme(AppTokens t, Brightness brightness) {
     brightness: brightness,
   ).copyWith(
     primary: t.accent,
-    onPrimary: Colors.white,
+    onPrimary: t.surface,
     secondary: t.accent,
-    onSecondary: Colors.white,
+    onSecondary: t.surface,
     surface: t.surface,
     onSurface: t.text,
     error: t.danger,
@@ -202,9 +218,12 @@ ThemeData _buildTheme(AppTokens t, Brightness brightness) {
     brightness: brightness,
     useMaterial3: true,
     colorScheme: scheme,
+    fontFamily: GoogleFonts.urbanist().fontFamily,
   );
 
-  final radius = BorderRadius.circular(16);
+  final cardRadius = BorderRadius.circular(20);
+  final btnRadius = BorderRadius.circular(14);
+  final fieldRadius = BorderRadius.circular(14);
 
   return base.copyWith(
     scaffoldBackgroundColor: t.bg,
@@ -215,51 +234,50 @@ ThemeData _buildTheme(AppTokens t, Brightness brightness) {
     iconTheme: IconThemeData(color: t.muted),
     textTheme: base.textTheme.apply(bodyColor: t.text, displayColor: t.text),
     appBarTheme: AppBarTheme(
-      backgroundColor: t.surface,
+      backgroundColor: t.bg,
       foregroundColor: t.text,
       elevation: 0,
-      scrolledUnderElevation: 0.5,
+      scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
       centerTitle: false,
       titleTextStyle: TextStyle(
         color: t.text,
-        fontSize: 18,
+        fontSize: 19,
         fontWeight: FontWeight.w700,
         letterSpacing: -0.3,
       ),
       iconTheme: IconThemeData(color: t.muted),
     ),
-    // Если flutter analyze ругнётся на CardThemeData / TabBarThemeData —
-    // у вас старый Flutter: замените их на CardTheme / TabBarTheme.
     cardTheme: CardThemeData(
       color: t.surface,
       elevation: 0,
       margin: EdgeInsets.zero,
       surfaceTintColor: Colors.transparent,
+      shadowColor: Colors.black.withOpacity(0.05),
       shape: RoundedRectangleBorder(
-        borderRadius: radius,
+        borderRadius: cardRadius,
         side: BorderSide(color: t.border),
       ),
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
         backgroundColor: t.accent,
-        foregroundColor: Colors.white,
+        foregroundColor: t.surface,
         disabledBackgroundColor: t.borderStrong,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
         textStyle: const TextStyle(
             fontSize: 14, fontWeight: FontWeight.w600, letterSpacing: -0.01),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(borderRadius: btnRadius),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         foregroundColor: t.text,
         side: BorderSide(color: t.borderStrong),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
         textStyle:
         const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(borderRadius: btnRadius),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
@@ -275,17 +293,17 @@ ThemeData _buildTheme(AppTokens t, Brightness brightness) {
       hintStyle: TextStyle(color: t.faint),
       labelStyle: TextStyle(color: t.muted),
       contentPadding:
-      const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: fieldRadius,
         borderSide: BorderSide(color: t.border),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: fieldRadius,
         borderSide: BorderSide(color: t.border),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: fieldRadius,
         borderSide: BorderSide(color: t.accent, width: 1.6),
       ),
       prefixIconColor: t.faint,
@@ -297,7 +315,7 @@ ThemeData _buildTheme(AppTokens t, Brightness brightness) {
           color: t.muted, fontSize: 12.5, fontWeight: FontWeight.w600),
       shape:
       RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
     ),
     switchTheme: SwitchThemeData(
       thumbColor: WidgetStateProperty.resolveWith(
@@ -329,20 +347,20 @@ ThemeData _buildTheme(AppTokens t, Brightness brightness) {
       color: t.surface,
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         side: BorderSide(color: t.border),
       ),
     ),
     dialogTheme: DialogThemeData(
       backgroundColor: t.surface,
       surfaceTintColor: Colors.transparent,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     ),
     snackBarTheme: SnackBarThemeData(
       backgroundColor: t.text,
       contentTextStyle: TextStyle(color: t.bg),
       behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ),
   );
 }
