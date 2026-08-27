@@ -107,8 +107,6 @@ class _ProfileViewState extends State<_ProfileView> {
                 _achievements(context, ctrl),
                 const SizedBox(height: 16),
                 _profileForm(context),
-                const SizedBox(height: 16),
-                _appearance(context),
                 const SizedBox(height: 40),
               ],
             ),
@@ -401,49 +399,6 @@ class _ProfileViewState extends State<_ProfileView> {
                   label: const Text('Сменить пароль'),
                 ),
               ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ---- Тема ----
-  Widget _appearance(BuildContext context) {
-    final t = context.tokens;
-    final theme = context.watch<ThemeController>();
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Внешний вид',
-                style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: t.text)),
-            const SizedBox(height: 4),
-            Text('Тема оформления интерфейса',
-                style: TextStyle(color: t.muted, fontSize: 13)),
-            const SizedBox(height: 14),
-            SegmentedButton<ThemeMode>(
-              segments: const [
-                ButtonSegment(
-                    value: ThemeMode.system,
-                    label: Text('Система'),
-                    icon: Icon(Icons.brightness_auto)),
-                ButtonSegment(
-                    value: ThemeMode.light,
-                    label: Text('Светлая'),
-                    icon: Icon(Icons.light_mode_outlined)),
-                ButtonSegment(
-                    value: ThemeMode.dark,
-                    label: Text('Тёмная'),
-                    icon: Icon(Icons.dark_mode_outlined)),
-              ],
-              selected: {theme.mode},
-              onSelectionChanged: (s) => theme.set(s.first),
             ),
           ],
         ),

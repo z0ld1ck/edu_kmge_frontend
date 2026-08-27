@@ -72,7 +72,7 @@ class _SearchControls extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.tokens;
     final pill = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(999),
+      borderRadius: BorderRadius.circular(12),
       borderSide: BorderSide(color: t.border),
     );
     return Row(
@@ -100,13 +100,12 @@ class _SearchControls extends StatelessWidget {
               border: pill,
               enabledBorder: pill,
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(999),
+                borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(color: t.accent, width: 1.4),
               ),
             ),
           ),
         ),
-        const SizedBox(width: 10),
       ],
     );
   }
@@ -192,7 +191,7 @@ class _CategoryChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: t.accentSoft,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         label,

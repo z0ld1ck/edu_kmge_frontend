@@ -78,18 +78,23 @@ class AppTokens extends ThemeExtension<AppTokens> {
   );
 
   static const dark = AppTokens(
-    bg: Color(0xFF191512),
-    surface: Color(0xFF221D19),
-    surface2: Color(0xFF2B251F),
-    surface3: Color(0xFF15110E),
-    border: Color(0xFF322B24),
-    borderStrong: Color(0xFF463C32),
+    bg: Color(0xFF0C0A00),
+    // было 0xFF191512
+    surface: Color(0xFF302B28),
+    // было 0xFF221D19
+    surface2: Color(0xFF3A3430),
+    // было 0xFF2B251F
+    surface3: Color(0xFF221E1B),
+    // было 0xFF15110E
+    border: Color(0xFF3D3733),
+    // было 0xFF322B24
+    borderStrong: Color(0xFF554B44),
     text: Color(0xFFF0E9E0),
     muted: Color(0xFFB1A596),
     faint: Color(0xFF7F7568),
     accent: Color(0xFFF0E9E0),
     accentInk: Color(0xFFF0E9E0),
-    accentSoft: Color(0xFF2B251F),
+    accentSoft: Color(0xFF39332F),
     success: Color(0xFF4CC479),
     amber: Color(0xFFE0A542),
     amberSoft: Color(0xFF322813),
@@ -97,7 +102,7 @@ class AppTokens extends ThemeExtension<AppTokens> {
     dangerSoft: Color(0xFF33201C),
     info: Color(0xFF5B9BE0),
     infoSoft: Color(0xFF1B2A3B),
-    ringTrack: Color(0xFF322B24),
+    ringTrack: Color(0xFF3D3733),
     navSelected: Color(0xFFF0E9E0),
     navSelectedInk: Color(0xFF191512),
   );
@@ -195,24 +200,26 @@ class AppColors {
 }
 
 ThemeData buildLightTheme() => _buildTheme(AppTokens.light, Brightness.light);
+
 ThemeData buildDarkTheme() => _buildTheme(AppTokens.dark, Brightness.dark);
 
 ThemeData _buildTheme(AppTokens t, Brightness brightness) {
-  final scheme = ColorScheme.fromSeed(
-    seedColor: t.accent,
-    brightness: brightness,
-  ).copyWith(
-    primary: t.accent,
-    onPrimary: t.surface,
-    secondary: t.accent,
-    onSecondary: t.surface,
-    surface: t.surface,
-    onSurface: t.text,
-    error: t.danger,
-    onError: Colors.white,
-    outline: t.border,
-    outlineVariant: t.border,
-  );
+  final scheme =
+      ColorScheme.fromSeed(
+        seedColor: t.accent,
+        brightness: brightness,
+      ).copyWith(
+        primary: t.accent,
+        onPrimary: t.surface,
+        secondary: t.accent,
+        onSecondary: t.surface,
+        surface: t.surface,
+        onSurface: t.text,
+        error: t.danger,
+        onError: Colors.white,
+        outline: t.border,
+        outlineVariant: t.border,
+      );
 
   final base = ThemeData(
     brightness: brightness,
@@ -266,7 +273,10 @@ ThemeData _buildTheme(AppTokens t, Brightness brightness) {
         disabledBackgroundColor: t.borderStrong,
         padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
         textStyle: const TextStyle(
-            fontSize: 14, fontWeight: FontWeight.w600, letterSpacing: -0.01),
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          letterSpacing: -0.01,
+        ),
         shape: RoundedRectangleBorder(borderRadius: btnRadius),
       ),
     ),
@@ -275,16 +285,14 @@ ThemeData _buildTheme(AppTokens t, Brightness brightness) {
         foregroundColor: t.text,
         side: BorderSide(color: t.borderStrong),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-        textStyle:
-        const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
         shape: RoundedRectangleBorder(borderRadius: btnRadius),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: t.accentInk,
-        textStyle:
-        const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(
@@ -292,8 +300,7 @@ ThemeData _buildTheme(AppTokens t, Brightness brightness) {
       fillColor: t.surface,
       hintStyle: TextStyle(color: t.faint),
       labelStyle: TextStyle(color: t.muted),
-      contentPadding:
-      const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
       border: OutlineInputBorder(
         borderRadius: fieldRadius,
         borderSide: BorderSide(color: t.border),
@@ -312,21 +319,26 @@ ThemeData _buildTheme(AppTokens t, Brightness brightness) {
       backgroundColor: t.surface2,
       side: BorderSide.none,
       labelStyle: TextStyle(
-          color: t.muted, fontSize: 12.5, fontWeight: FontWeight.w600),
-      shape:
-      RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+        color: t.muted,
+        fontSize: 12.5,
+        fontWeight: FontWeight.w600,
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
     ),
     switchTheme: SwitchThemeData(
       thumbColor: WidgetStateProperty.resolveWith(
-              (s) => s.contains(WidgetState.selected) ? Colors.white : t.faint),
+        (s) => s.contains(WidgetState.selected) ? Colors.white : t.faint,
+      ),
       trackColor: WidgetStateProperty.resolveWith(
-              (s) => s.contains(WidgetState.selected) ? t.accent : t.surface2),
+        (s) => s.contains(WidgetState.selected) ? t.accent : t.surface2,
+      ),
       trackOutlineColor: WidgetStateProperty.all(t.border),
     ),
     radioTheme: RadioThemeData(
       fillColor: WidgetStateProperty.resolveWith(
-              (s) => s.contains(WidgetState.selected) ? t.accent : t.faint),
+        (s) => s.contains(WidgetState.selected) ? t.accent : t.faint,
+      ),
     ),
     progressIndicatorTheme: ProgressIndicatorThemeData(
       color: t.accent,
@@ -339,10 +351,7 @@ ThemeData _buildTheme(AppTokens t, Brightness brightness) {
       indicatorColor: t.accent,
       dividerColor: t.border,
     ),
-    listTileTheme: ListTileThemeData(
-      iconColor: t.muted,
-      textColor: t.text,
-    ),
+    listTileTheme: ListTileThemeData(iconColor: t.muted, textColor: t.text),
     popupMenuTheme: PopupMenuThemeData(
       color: t.surface,
       surfaceTintColor: Colors.transparent,
