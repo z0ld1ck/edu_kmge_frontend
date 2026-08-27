@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_shell.dart';
+import '../../../ai/domain/repositories/ai_repository.dart';
 import '../../domain/entities/course.dart';
 import '../../domain/entities/lesson.dart';
 import '../../domain/entities/quiz_draft.dart';
@@ -386,6 +387,7 @@ class _LessonFormDialogState extends State<_LessonFormDialog> {
   );
   bool _busy = false;
   bool _preview = false;
+  bool _aiEnabled = false;
 
   int? get _lessonId => widget.lesson?.id;
 
@@ -852,6 +854,7 @@ class _QuizTabState extends State<_QuizTab> {
   final List<int> _correct = [];
   bool _loading = true;
   bool _busy = false;
+  bool _aiEnabled = false;
   String? _info;
 
   @override
@@ -862,7 +865,12 @@ class _QuizTabState extends State<_QuizTab> {
 
   Future<void> _load() async {
     final quiz = await context.read<CourseEditController>().loadQuiz();
+    bool ai = false;
+    try {
+      ai = await sl<AiRepository>().isEnabled();
+    } catch (_) {}
     setState(() {
+      _aiEnabled = ai;
       _questions.clear();
       _correct.clear();
       if (quiz != null) {
@@ -928,6 +936,9 @@ class _QuizTabState extends State<_QuizTab> {
           .read<CourseEditController>()
           .generateQuizAI(num);
       setState(() {
+        // Новая генерация заменяет прежние вопросы, а не добавляется к ним.
+        _questions.clear();
+        _correct.clear();
         for (final q in generated) {
           final correctIdx = q.answers.indexWhere((a) => a.isCorrect);
           _questions.add(q);
@@ -973,12 +984,14 @@ class _QuizTabState extends State<_QuizTab> {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              OutlinedButton.icon(
-                onPressed: _busy ? null : _aiGenerate,
-                icon: Icon(Icons.auto_awesome, color: t.accent),
-                label: const Text('Сгенерировать AI'),
-              ),
-              const SizedBox(width: 10),
+              if (_aiEnabled) ...[
+                OutlinedButton.icon(
+                  onPressed: _busy ? null : _aiGenerate,
+                  icon: Icon(Icons.auto_awesome, color: t.accent),
+                  label: const Text('Сгенерировать AI'),
+                ),
+                const SizedBox(width: 10),
+              ],
               OutlinedButton.icon(
                 onPressed: _addQuestion,
                 icon: const Icon(Icons.add),

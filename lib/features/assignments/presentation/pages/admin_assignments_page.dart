@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
+import 'dart:html' as html;
+import '../../../../core/network/api_client.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_shell.dart';
@@ -32,6 +33,14 @@ class _AssignmentsView extends StatelessWidget {
       title: 'Назначения',
       current: '/admin/assignments',
       actions: [
+        OutlinedButton.icon(
+          onPressed: ctrl.items.isEmpty
+              ? null
+              : () => _exportExcel(context, ctrl),
+          icon: const Icon(Icons.download_outlined, size: 18),
+          label: const Text('Экспорт в Excel'),
+        ),
+        const SizedBox(width: 12),
         Padding(
           padding: const EdgeInsets.only(right: 12),
           child: FilledButton.icon(
@@ -52,15 +61,50 @@ class _AssignmentsView extends StatelessWidget {
                 : ctrl.items.isEmpty
                 ? _empty(context)
                 : ListView(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
-              children: [
-                for (final a in ctrl.items) _row(context, ctrl, a),
-              ],
-            ),
+                    padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+                    children: [
+                      for (final a in ctrl.items) _row(context, ctrl, a),
+                    ],
+                  ),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _exportExcel(
+    BuildContext context,
+    AssignmentsController ctrl,
+  ) async {
+    final params = <String, String>{};
+    if (ctrl.filterCourseId != null) {
+      params['course_id'] = '${ctrl.filterCourseId}';
+    }
+    if (ctrl.filterStatus != null) params['status'] = ctrl.filterStatus!;
+    final qs = params.isEmpty
+        ? ''
+        : '?${params.entries.map((e) => '${e.key}=${Uri.encodeQueryComponent(e.value)}').join('&')}';
+    try {
+      final bytes = await sl<ApiClient>().getBytes(
+        '/api/admin/assignments/export$qs',
+      );
+      final blob = html.Blob([
+        bytes,
+      ], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      final anchor = html.AnchorElement(href: url)
+        ..download = 'assignments.xlsx';
+      html.document.body?.append(anchor);
+      anchor.click();
+      anchor.remove();
+      html.Url.revokeObjectUrl(url);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Ошибка экспорта: $e')));
+      }
+    }
   }
 
   Widget _filters(BuildContext context, AssignmentsController ctrl) {
@@ -85,8 +129,9 @@ class _AssignmentsView extends StatelessWidget {
                 const DropdownMenuItem(value: null, child: Text('Все курсы')),
                 for (final c in ctrl.courses)
                   DropdownMenuItem(
-                      value: c.id,
-                      child: Text(c.title, overflow: TextOverflow.ellipsis)),
+                    value: c.id,
+                    child: Text(c.title, overflow: TextOverflow.ellipsis),
+                  ),
               ],
               onChanged: (v) => ctrl.setCourseFilter(v),
             ),
@@ -109,8 +154,10 @@ class _AssignmentsView extends StatelessWidget {
               onChanged: (v) => ctrl.setStatusFilter(v),
             ),
           ),
-          Text('Всего: ${ctrl.items.length}',
-              style: TextStyle(color: t.muted, fontWeight: FontWeight.w600)),
+          Text(
+            'Всего: ${ctrl.items.length}',
+            style: TextStyle(color: t.muted, fontWeight: FontWeight.w600),
+          ),
         ],
       ),
     );
@@ -126,8 +173,10 @@ class _AssignmentsView extends StatelessWidget {
           const SizedBox(height: 12),
           const Text('Пока нет назначений'),
           const SizedBox(height: 4),
-          Text('Нажмите «Назначить курс», чтобы выдать курс сотрудникам',
-              style: TextStyle(color: t.muted)),
+          Text(
+            'Нажмите «Назначить курс», чтобы выдать курс сотрудникам',
+            style: TextStyle(color: t.muted),
+          ),
         ],
       ),
     );
@@ -148,7 +197,9 @@ class _AssignmentsView extends StatelessWidget {
               child: Text(
                 _initials(a.userName),
                 style: TextStyle(
-                    color: t.accentInk, fontWeight: FontWeight.bold),
+                  color: t.accentInk,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             const SizedBox(width: 14),
@@ -159,34 +210,49 @@ class _AssignmentsView extends StatelessWidget {
                   Row(
                     children: [
                       Flexible(
-                        child: Text(a.userName,
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, color: t.text)),
+                        child: Text(
+                          a.userName,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: t.text,
+                          ),
+                        ),
                       ),
                       if (a.department != null) ...[
                         const SizedBox(width: 8),
-                        Text(a.department!,
-                            style:
-                            TextStyle(color: t.faint, fontSize: 12)),
+                        Text(
+                          a.department!,
+                          style: TextStyle(color: t.faint, fontSize: 12),
+                        ),
                       ],
                     ],
                   ),
                   const SizedBox(height: 2),
-                  Text(a.courseTitle,
-                      style: TextStyle(color: t.muted, fontSize: 13)),
+                  Text(
+                    a.courseTitle,
+                    style: TextStyle(color: t.muted, fontSize: 13),
+                  ),
                   const SizedBox(height: 6),
                   Row(
                     children: [
                       _statusChip(context, a),
                       if (a.isMandatory) ...[
                         const SizedBox(width: 6),
-                        _chip(context, 'Обязательный', t.accentInk,
-                            t.accentSoft),
+                        _chip(
+                          context,
+                          'Обязательный',
+                          t.accentInk,
+                          t.accentSoft,
+                        ),
                       ],
                       if (a.dueDate != null && !done && !a.isOverdue) ...[
                         const SizedBox(width: 6),
-                        _chip(context, 'до ${_fmtDate(a.dueDate!)}', t.muted,
-                            t.surface2),
+                        _chip(
+                          context,
+                          'до ${_fmtDate(a.dueDate!)}',
+                          t.muted,
+                          t.surface2,
+                        ),
                       ],
                     ],
                   ),
@@ -199,11 +265,14 @@ class _AssignmentsView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text('${a.progress.toStringAsFixed(0)}%',
-                      style: TextStyle(
-                          color: t.accent,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15)),
+                  Text(
+                    '${a.progress.toStringAsFixed(0)}%',
+                    style: TextStyle(
+                      color: t.accent,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
                   const SizedBox(height: 4),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(6),
@@ -235,8 +304,12 @@ class _AssignmentsView extends StatelessWidget {
     }
     if (a.isOverdue) {
       final over = -(a.daysLeft ?? 0);
-      return _chip(context, 'Просрочено на $over ${_plural(over)}', t.danger,
-          t.dangerSoft);
+      return _chip(
+        context,
+        'Просрочено на $over ${_plural(over)}',
+        t.danger,
+        t.dangerSoft,
+      );
     }
     final left = a.daysLeft;
     if (left != null) {
@@ -254,43 +327,59 @@ class _AssignmentsView extends StatelessWidget {
   Widget _chip(BuildContext context, String text, Color fg, Color bg) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-      decoration:
-      BoxDecoration(color: bg, borderRadius: BorderRadius.circular(20)),
-      child: Text(text,
-          style: TextStyle(
-              color: fg, fontSize: 11.5, fontWeight: FontWeight.w600)),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: fg,
+          fontSize: 11.5,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
   }
 
   Future<void> _confirmRemove(
-      BuildContext context, AssignmentsController ctrl, Assignment a) async {
+    BuildContext context,
+    AssignmentsController ctrl,
+    Assignment a,
+  ) async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
         title: const Text('Снять назначение?'),
         content: Text(
-            'Курс «${a.courseTitle}» для ${a.userName}. Прогресс сотрудника сохранится, но дедлайн и обязательность будут сняты.'),
+          'Курс «${a.courseTitle}» для ${a.userName}. Прогресс сотрудника сохранится, но дедлайн и обязательность будут сняты.',
+        ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(c, false),
-              child: const Text('Отмена')),
+            onPressed: () => Navigator.pop(c, false),
+            child: const Text('Отмена'),
+          ),
           FilledButton(
-              onPressed: () => Navigator.pop(c, true),
-              child: const Text('Снять')),
+            onPressed: () => Navigator.pop(c, true),
+            child: const Text('Снять'),
+          ),
         ],
       ),
     );
     if (ok == true) {
       final done = await ctrl.remove(a.enrollmentId);
       if (context.mounted && done) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Назначение снято')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Назначение снято')));
       }
     }
   }
 
   Future<void> _openAssignDialog(
-      BuildContext context, AssignmentsController ctrl) async {
+    BuildContext context,
+    AssignmentsController ctrl,
+  ) async {
     final n = await showDialog<int>(
       context: context,
       builder: (_) => ChangeNotifierProvider.value(
@@ -299,9 +388,9 @@ class _AssignmentsView extends StatelessWidget {
       ),
     );
     if (n != null && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Назначено сотрудникам: $n')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Назначено сотрудникам: $n')));
     }
   }
 
@@ -323,8 +412,18 @@ class _AssignmentsView extends StatelessWidget {
 
   static String _fmtDate(DateTime d) {
     const m = [
-      'янв', 'фев', 'мар', 'апр', 'мая', 'июн',
-      'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'
+      'янв',
+      'фев',
+      'мар',
+      'апр',
+      'мая',
+      'июн',
+      'июл',
+      'авг',
+      'сен',
+      'окт',
+      'ноя',
+      'дек',
     ];
     return '${d.day} ${m[d.month - 1]} ${d.year}';
   }
@@ -374,33 +473,37 @@ class _AssignDialogState extends State<_AssignDialog> {
                 items: [
                   for (final Course c in courses)
                     DropdownMenuItem(
-                        value: c.id,
-                        child:
-                        Text(c.title, overflow: TextOverflow.ellipsis)),
+                      value: c.id,
+                      child: Text(c.title, overflow: TextOverflow.ellipsis),
+                    ),
                 ],
                 onChanged: (v) => setState(() => _courseId = v),
               ),
               const SizedBox(height: 16),
-              Text('Кому назначить',
-                  style: TextStyle(
-                      color: t.muted,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600)),
+              Text(
+                'Кому назначить',
+                style: TextStyle(
+                  color: t.muted,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
               const SizedBox(height: 6),
               SegmentedButton<_Target>(
                 segments: const [
                   ButtonSegment(
-                      value: _Target.users,
-                      label: Text('Сотрудники'),
-                      icon: Icon(Icons.person_outline, size: 16)),
+                    value: _Target.users,
+                    label: Text('Сотрудники'),
+                    icon: Icon(Icons.person_outline, size: 16),
+                  ),
                   ButtonSegment(
-                      value: _Target.department,
-                      label: Text('Подразделение'),
-                      icon: Icon(Icons.apartment_outlined, size: 16)),
+                    value: _Target.department,
+                    label: Text('Подразделение'),
+                    icon: Icon(Icons.apartment_outlined, size: 16),
+                  ),
                 ],
                 selected: {_target},
-                onSelectionChanged: (s) =>
-                    setState(() => _target = s.first),
+                onSelectionChanged: (s) => setState(() => _target = s.first),
               ),
               const SizedBox(height: 12),
               if (_target == _Target.users)
@@ -414,9 +517,11 @@ class _AssignDialogState extends State<_AssignDialog> {
                     child: OutlinedButton.icon(
                       onPressed: _pickDate,
                       icon: const Icon(Icons.event, size: 18),
-                      label: Text(_dueDate == null
-                          ? 'Срок сдачи (необяз.)'
-                          : 'До ${_AssignmentsViewFmt.fmt(_dueDate!)}'),
+                      label: Text(
+                        _dueDate == null
+                            ? 'Срок сдачи (необяз.)'
+                            : 'До ${_AssignmentsViewFmt.fmt(_dueDate!)}',
+                      ),
                     ),
                   ),
                   if (_dueDate != null)
@@ -433,8 +538,10 @@ class _AssignDialogState extends State<_AssignDialog> {
                 value: _mandatory,
                 onChanged: (v) => setState(() => _mandatory = v),
                 title: const Text('Обязательный курс'),
-                subtitle: Text('Отметить назначение как обязательное',
-                    style: TextStyle(color: t.faint, fontSize: 12)),
+                subtitle: Text(
+                  'Отметить назначение как обязательное',
+                  style: TextStyle(color: t.faint, fontSize: 12),
+                ),
               ),
             ],
           ),
@@ -442,16 +549,17 @@ class _AssignDialogState extends State<_AssignDialog> {
       ),
       actions: [
         TextButton(
-            onPressed:
-            _saving ? null : () => Navigator.pop(context),
-            child: const Text('Отмена')),
+          onPressed: _saving ? null : () => Navigator.pop(context),
+          child: const Text('Отмена'),
+        ),
         FilledButton(
           onPressed: _saving || !_canSubmit ? null : () => _submit(ctrl),
           child: _saving
               ? const SizedBox(
-              width: 18,
-              height: 18,
-              child: CircularProgressIndicator(strokeWidth: 2))
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
               : const Text('Назначить'),
         ),
       ],
@@ -469,10 +577,12 @@ class _AssignDialogState extends State<_AssignDialog> {
     if (_search.trim().isEmpty) return base;
     final q = _search.toLowerCase();
     return base
-        .where((u) =>
-    u.fullName.toLowerCase().contains(q) ||
-        u.email.toLowerCase().contains(q) ||
-        (u.department ?? '').toLowerCase().contains(q))
+        .where(
+          (u) =>
+              u.fullName.toLowerCase().contains(q) ||
+              u.email.toLowerCase().contains(q) ||
+              (u.department ?? '').toLowerCase().contains(q),
+        )
         .toList();
   }
 
@@ -490,8 +600,10 @@ class _AssignDialogState extends State<_AssignDialog> {
           onChanged: (v) => setState(() => _search = v),
         ),
         const SizedBox(height: 8),
-        Text('Выбрано: ${_userIds.length}',
-            style: TextStyle(color: t.muted, fontSize: 12)),
+        Text(
+          'Выбрано: ${_userIds.length}',
+          style: TextStyle(color: t.muted, fontSize: 12),
+        ),
         const SizedBox(height: 6),
         Container(
           height: 200,
@@ -501,35 +613,40 @@ class _AssignDialogState extends State<_AssignDialog> {
           ),
           child: users.isEmpty
               ? Center(
-              child: Text('Нет сотрудников',
-                  style: TextStyle(color: t.faint)))
+                  child: Text(
+                    'Нет сотрудников',
+                    style: TextStyle(color: t.faint),
+                  ),
+                )
               : ListView.builder(
-            itemCount: users.length,
-            itemBuilder: (c, i) {
-              final u = users[i];
-              final on = _userIds.contains(u.id);
-              return CheckboxListTile(
-                dense: true,
-                value: on,
-                controlAffinity: ListTileControlAffinity.leading,
-                title: Text(u.fullName,
-                    style: TextStyle(color: t.text, fontSize: 14)),
-                subtitle: Text(
-                  u.department == null || u.department!.isEmpty
-                      ? u.email
-                      : '${u.department} · ${u.email}',
-                  style: TextStyle(color: t.faint, fontSize: 12),
+                  itemCount: users.length,
+                  itemBuilder: (c, i) {
+                    final u = users[i];
+                    final on = _userIds.contains(u.id);
+                    return CheckboxListTile(
+                      dense: true,
+                      value: on,
+                      controlAffinity: ListTileControlAffinity.leading,
+                      title: Text(
+                        u.fullName,
+                        style: TextStyle(color: t.text, fontSize: 14),
+                      ),
+                      subtitle: Text(
+                        u.department == null || u.department!.isEmpty
+                            ? u.email
+                            : '${u.department} · ${u.email}',
+                        style: TextStyle(color: t.faint, fontSize: 12),
+                      ),
+                      onChanged: (v) => setState(() {
+                        if (v == true) {
+                          _userIds.add(u.id);
+                        } else {
+                          _userIds.remove(u.id);
+                        }
+                      }),
+                    );
+                  },
                 ),
-                onChanged: (v) => setState(() {
-                  if (v == true) {
-                    _userIds.add(u.id);
-                  } else {
-                    _userIds.remove(u.id);
-                  }
-                }),
-              );
-            },
-          ),
         ),
       ],
     );
@@ -538,16 +655,17 @@ class _AssignDialogState extends State<_AssignDialog> {
   Widget _departmentPicker(BuildContext context, List<String> departments) {
     final t = context.tokens;
     if (departments.isEmpty) {
-      return Text('У сотрудников не заданы подразделения',
-          style: TextStyle(color: t.faint));
+      return Text(
+        'У сотрудников не заданы подразделения',
+        style: TextStyle(color: t.faint),
+      );
     }
     return DropdownButtonFormField<String>(
       value: _department,
       isExpanded: true,
       decoration: const InputDecoration(labelText: 'Подразделение *'),
       items: [
-        for (final d in departments)
-          DropdownMenuItem(value: d, child: Text(d)),
+        for (final d in departments) DropdownMenuItem(value: d, child: Text(d)),
       ],
       onChanged: (v) => setState(() => _department = v),
     );
@@ -579,7 +697,9 @@ class _AssignDialogState extends State<_AssignDialog> {
       Navigator.pop(context, n);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ошибка: ${ctrl.error ?? 'не удалось назначить'}')),
+        SnackBar(
+          content: Text('Ошибка: ${ctrl.error ?? 'не удалось назначить'}'),
+        ),
       );
     }
   }
@@ -588,8 +708,18 @@ class _AssignDialogState extends State<_AssignDialog> {
 class _AssignmentsViewFmt {
   static String fmt(DateTime d) {
     const m = [
-      'янв', 'фев', 'мар', 'апр', 'мая', 'июн',
-      'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'
+      'янв',
+      'фев',
+      'мар',
+      'апр',
+      'мая',
+      'июн',
+      'июл',
+      'авг',
+      'сен',
+      'окт',
+      'ноя',
+      'дек',
     ];
     return '${d.day} ${m[d.month - 1]} ${d.year}';
   }
