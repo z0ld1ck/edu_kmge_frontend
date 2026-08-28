@@ -51,6 +51,14 @@ abstract class CourseRepository {
 
   Future<void> reorderLessons(int courseId, List<int> lessonIds);
 
+  Future<CourseDetail> uploadCover(
+    int courseId,
+    List<int> bytes,
+    String filename,
+  );
+
+  Future<CourseDetail> setCoverUrl(int courseId, String? url);
+
   Future<Quiz> quiz(int courseId);
 
   Future<Lesson> addMaterialLink(

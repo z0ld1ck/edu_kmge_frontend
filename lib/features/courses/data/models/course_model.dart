@@ -12,6 +12,7 @@ class CourseModel extends Course {
     required super.certificateEnabled,
     required super.lessonsCount,
     required super.hasQuiz,
+    super.coverUrl,
   });
 
   factory CourseModel.fromJson(Map<String, dynamic> j) => CourseModel(
@@ -24,6 +25,7 @@ class CourseModel extends Course {
     certificateEnabled: (j['certificate_enabled'] ?? true) as bool,
     lessonsCount: (j['lessons_count'] ?? 0) as int,
     hasQuiz: (j['has_quiz'] ?? false) as bool,
+    coverUrl: j['cover_url'] as String?,
   );
 }
 
@@ -39,6 +41,7 @@ class CourseDetailModel extends CourseDetail {
     required super.lessonsCount,
     required super.hasQuiz,
     required super.lessons,
+    super.coverUrl,
   });
 
   factory CourseDetailModel.fromJson(Map<String, dynamic> j) =>
@@ -52,6 +55,7 @@ class CourseDetailModel extends CourseDetail {
         certificateEnabled: (j['certificate_enabled'] ?? true) as bool,
         lessonsCount: (j['lessons_count'] ?? 0) as int,
         hasQuiz: (j['has_quiz'] ?? false) as bool,
+        coverUrl: j['cover_url'] as String?,
         lessons: ((j['lessons'] as List?) ?? const [])
             .map((e) => LessonModel.fromJson(e as Map<String, dynamic>))
             .toList(),

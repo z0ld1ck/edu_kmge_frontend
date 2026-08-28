@@ -46,6 +46,27 @@ class CourseRemoteDataSource {
     return CourseDetailModel.fromJson(data as Map<String, dynamic>);
   }
 
+  Future<CourseDetailModel> uploadCover(
+    int courseId,
+    List<int> bytes,
+    String filename,
+  ) async {
+    final data = await _api.uploadFile(
+      '/api/courses/$courseId/cover',
+      bytes: bytes,
+      filename: filename,
+    );
+    return CourseDetailModel.fromJson(data as Map<String, dynamic>);
+  }
+
+  Future<CourseDetailModel> setCoverUrl(int courseId, String? url) async {
+    final data = await _api.patch(
+      '/api/courses/$courseId',
+      body: {'cover_url': url},
+    );
+    return CourseDetailModel.fromJson(data as Map<String, dynamic>);
+  }
+
   Future<void> deleteCourse(int id) => _api.delete('/api/courses/$id');
 
   Future<LessonModel> addLesson(int courseId, Map<String, dynamic> body) async {

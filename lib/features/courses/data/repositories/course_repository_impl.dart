@@ -92,9 +92,22 @@ class CourseRepositoryImpl implements CourseRepository {
   @override
   Future<void> deleteLesson(int lessonId) => _remote.deleteLesson(lessonId);
 
+  @override
   Future<void> reorderLessons(int courseId, List<int> lessonIds) =>
       _remote.reorderLessons(courseId, lessonIds);
 
+  @override
+  Future<CourseDetail> uploadCover(
+    int courseId,
+    List<int> bytes,
+    String filename,
+  ) => _remote.uploadCover(courseId, bytes, filename);
+
+  @override
+  Future<CourseDetail> setCoverUrl(int courseId, String? url) =>
+      _remote.setCoverUrl(courseId, url);
+
+  @override
   @override
   Future<Lesson> addMaterialLink(
     int lessonId, {

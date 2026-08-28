@@ -10,10 +10,13 @@ class Course {
   final bool certificateEnabled;
   final int lessonsCount;
   final bool hasQuiz;
+  final String? coverUrl;
+
 
   const Course({
     required this.id,
     required this.title,
+    this.coverUrl,
     required this.description,
     required this.category,
     required this.isPublished,
@@ -31,6 +34,7 @@ class CourseDetail extends Course {
   const CourseDetail({
     required super.id,
     required super.title,
+    super.coverUrl,
     required super.description,
     required super.category,
     required super.isPublished,
@@ -47,6 +51,7 @@ class CourseDetail extends Course {
     description: description,
     category: category,
     isPublished: isPublished,
+    coverUrl: coverUrl,
     passScore: passScore,
     certificateEnabled: certificateEnabled,
     lessonsCount: lessonsCount,

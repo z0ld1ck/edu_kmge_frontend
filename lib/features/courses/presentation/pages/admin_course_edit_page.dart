@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'dart:html' as html;
+import '../../../../core/config/app_config.dart';
 import '../../../../core/widgets/markdown_view.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -147,6 +148,125 @@ class _MetaTabState extends State<_MetaTab> {
     _certificate = c.certificateEnabled;
   }
 
+  Future<void> _pickCover() async {
+    final ctrl = context.read<CourseEditController>();
+    if (ctrl.courseId == null) {
+      setState(() => _error = 'Сначала сохраните курс, затем добавьте обложку');
+      return;
+    }
+    final input = html.FileUploadInputElement()
+      ..accept = 'image/*'
+      ..style.display = 'none';
+    html.document.body?.append(input);
+    input.click();
+    await input.onChange.first;
+    final files = input.files;
+    input.remove();
+    if (files == null || files.isEmpty) return;
+    final f = files.first;
+
+    final reader = html.FileReader();
+    reader.readAsArrayBuffer(f);
+    await reader.onLoadEnd.first;
+    final result = reader.result;
+    final Uint8List bytes = result is ByteBuffer
+        ? result.asUint8List()
+        : result as Uint8List;
+
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      await ctrl.uploadCover(bytes, f.name);
+    } catch (e) {
+      if (mounted) setState(() => _error = e.toString());
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _removeCover() async {
+    setState(() => _busy = true);
+    try {
+      await context.read<CourseEditController>().removeCover();
+    } catch (e) {
+      if (mounted) setState(() => _error = e.toString());
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Widget _coverSection(BuildContext context, CourseEditController ctrl) {
+    final t = context.tokens;
+    final url = ctrl.course?.coverUrl;
+    final hasCover = url != null && url.isNotEmpty;
+    final full = !hasCover
+        ? null
+        : (url.startsWith('http') ? url : '${AppConfig.apiBase}$url');
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Обложка курса',
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: t.text,
+            fontSize: 13,
+          ),
+        ),
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            height: 160,
+            width: double.infinity,
+            color: t.surface2,
+            child: full == null
+                ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.image_outlined, size: 34, color: t.faint),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Нет обложки',
+                          style: TextStyle(color: t.muted, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  )
+                : Image.network(
+                    full,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Center(
+                      child: Icon(Icons.broken_image_outlined, color: t.faint),
+                    ),
+                  ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            OutlinedButton.icon(
+              onPressed: _busy ? null : _pickCover,
+              icon: const Icon(Icons.upload_outlined, size: 18),
+              label: Text(hasCover ? 'Заменить' : 'Загрузить обложку'),
+            ),
+            if (hasCover) ...[
+              const SizedBox(width: 10),
+              TextButton.icon(
+                onPressed: _busy ? null : _removeCover,
+                icon: Icon(Icons.delete_outline, size: 18, color: t.danger),
+                label: Text('Убрать', style: TextStyle(color: t.danger)),
+              ),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+
   Future<void> _save() async {
     if (_title.text.trim().isEmpty) {
       setState(() => _error = 'Укажите название курса');
@@ -183,7 +303,8 @@ class _MetaTabState extends State<_MetaTab> {
   @override
   Widget build(BuildContext context) {
     final t = context.tokens;
-    final course = context.watch<CourseEditController>().course;
+    final ctrl = context.watch<CourseEditController>();
+    final course = ctrl.course;
     if (!_initialized && course != null) {
       _syncFrom(course);
       _initialized = true;
@@ -206,7 +327,9 @@ class _MetaTabState extends State<_MetaTab> {
                 maxLines: 4,
                 decoration: const InputDecoration(labelText: 'Описание'),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
+              _coverSection(context, ctrl),
+              const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(

@@ -152,6 +152,16 @@ class CourseEditController extends ChangeNotifier {
     await load(courseId!);
   }
 
+  Future<void> uploadCover(List<int> bytes, String filename) async {
+    course = await _repo.uploadCover(courseId!, bytes, filename);
+    notifyListeners();
+  }
+
+  Future<void> removeCover() async {
+    course = await _repo.setCoverUrl(courseId!, null);
+    notifyListeners();
+  }
+
   /// Перетаскивание урока: oldIndex → newIndex (индексы ReorderableListView).
   Future<void> reorderLessons(int oldIndex, int newIndex) async {
     final current = course;
